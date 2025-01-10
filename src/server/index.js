@@ -38,10 +38,10 @@ async function start({ port, host } = {}) {
     .use(router)
     .use(compress);
 
-  const server = app.listen(port, host);
+  const server = app.listen(port, host || '0.0.0.0');
   wss.initSocketServer(server);
 
-  console.log(`serve start at:  http://localhost:${port}\n\n`);
+  console.log(`serve start at:  http://${host||'localhost'}:${port}\n\n`);
 }
 
 function getRouter(clients) {
