@@ -175,7 +175,6 @@ export default class Runtime extends BaseDomain {
    * @param {Boolean} param.generatePreview whether to generate a preview
    */
   evaluate({ expression, generatePreview }) {
-    console.log('expression', expression);
     try {
       // Modifying the scope to the global scope enables variables defined
       // with var to be accessible globally.

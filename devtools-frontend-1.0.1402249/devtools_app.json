@@ -3,6 +3,7 @@
     { "name": "emulation", "type": "autostart" },
     { "name": "inspector_main", "type": "autostart" },
     { "name": "mobile_throttling", "type": "autostart" },
+    { "name": "screencast" },
 
     { "name": "browser_debugger" },
     { "name": "cookie_table" },

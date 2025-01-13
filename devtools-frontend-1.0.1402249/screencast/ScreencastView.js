@@ -127,7 +127,7 @@ Screencast.ScreencastView = class extends UI.VBox {
     dimensions.height *= window.devicePixelRatio;
     // Note: startScreencast width and height are expected to be integers so must be floored.
     this._screenCaptureModel.startScreencast(
-        'jpeg', 80, Math.floor(Math.min(maxImageDimension, dimensions.width)),
+        'jpeg', 50, Math.floor(Math.min(maxImageDimension, dimensions.width)),
         Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this._screencastFrame.bind(this),
         this._screencastVisibilityChanged.bind(this));
     for (const emulationModel of SDK.targetManager.models(SDK.EmulationModel))

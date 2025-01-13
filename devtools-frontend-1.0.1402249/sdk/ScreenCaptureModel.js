@@ -79,6 +79,9 @@ SDK.ScreenCaptureModel = class extends SDK.SDKModel {
     this._agent.screencastFrameAck(sessionId);
     if (this._onScreencastFrame)
       this._onScreencastFrame.call(null, data, metadata);
+    else {
+      this.stopScreencast();
+    }
   }
 
   /**
