@@ -3,11 +3,10 @@ import BaseDomain from './domain';
 import { Event } from './protocol';
 
 function cropImage(base64, { left, top }) {
-  prevImage = ''
-
   return new Promise((resolve) => {
     // 创建一个新的 Image 对象
     const img = new Image();
+    const scale = window.innerWidth > 720 ? 2 : 1;
     img.src = base64;
     img.onload = () => {
       // 创建一个 canvas 元素
@@ -15,8 +14,8 @@ function cropImage(base64, { left, top }) {
       const ctx = canvas.getContext('2d');
   
       // 设置 canvas 的宽高
-      canvas.width = window.innerWidth / 2;
-      canvas.height = window.innerHeight / 2;
+      canvas.width = window.innerWidth / scale;
+      canvas.height = window.innerHeight / scale;
   
       // 裁切图片
       ctx.drawImage(
@@ -27,8 +26,8 @@ function cropImage(base64, { left, top }) {
         window.innerHeight,       // 裁切的高度
         0,                        // 在 canvas 上放置的 x 坐标
         0,                        // 在 canvas 上放置的 y 坐标
-        window.innerWidth / 2,        // 在 canvas 上绘制的宽度
-        window.innerHeight / 2        // 在 canvas 上绘制的高度
+        window.innerWidth / scale,        // 在 canvas 上绘制的宽度
+        window.innerHeight / scale        // 在 canvas 上绘制的高度
       );
       
       // 获取裁切后的图片的 base64 编码
@@ -40,6 +39,8 @@ function cropImage(base64, { left, top }) {
 
 export default class Page extends BaseDomain {
   namespace = 'Page';
+  prevImage = '';
+  prevOffset = '';
   frame = new Map();
 
   /**
@@ -94,10 +95,11 @@ export default class Page extends BaseDomain {
     const captureScreen = () => {
       if (document.hidden) return;
       ScreenPreview.captureScreen().then((base64) => {
-        if (this.prevImage === base64) return;
-        this.prevImage = base64;
         const left = document.body.scrollLeft;
         const top = document.body.scrollTop;
+        if (this.prevImage === base64 && `${left}|${top}` === this.prevOffset) return;
+        this.prevImage = base64;
+        this.prevOffset = `${left}|${top}`;
         cropImage(base64, { left, top }).then((data) => {
           this.send({
             method: Event.screencastFrame,
@@ -109,8 +111,8 @@ export default class Page extends BaseDomain {
                 deviceWidth: window.innerWidth,
                 pageScaleFactor: 1,
                 offsetTop: 0,
-                scrollOffsetX: left,
-                scrollOffsetY: top,
+                scrollOffsetX: 0,
+                scrollOffsetY: 0,
                 timestamp: Date.now()
               }
             }
