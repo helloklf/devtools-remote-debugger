@@ -108,6 +108,10 @@ export function objectFormat(val, others = {}) {
   if (subtype === 'null') return { type, subtype, value: val };
 
   const res = { type, subtype, objectId: getIdByObject(val, origin) };
+  try {
+    JSON.stringify(val);
+    res.value =  val
+  } catch(ex) {}
   // Some different data types need to be processed separately
   // function
   if (type === 'function') {

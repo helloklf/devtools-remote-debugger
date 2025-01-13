@@ -140,6 +140,12 @@ export default class Runtime extends BaseDomain {
     return callFrames;
   }
 
+  globalLexicalScopeNames () {
+    return {
+      names: Object.getOwnPropertyNames(window)
+    }
+  }
+
   /**
    * @public
    */
@@ -169,15 +175,26 @@ export default class Runtime extends BaseDomain {
    * @param {Boolean} param.generatePreview whether to generate a preview
    */
   evaluate({ expression, generatePreview }) {
-    // Modifying the scope to the global scope enables variables defined
-    // with var to be accessible globally.
-    // eslint-disable-next-line
-    const res = window.eval(expression);
-    // chrome-api
-    window.$_ = res;
-    return {
-      result: objectFormat(res, { preview: generatePreview }),
-    };
+    console.log('expression', expression);
+    try {
+      // Modifying the scope to the global scope enables variables defined
+      // with var to be accessible globally.
+      // eslint-disable-next-line
+      const res = window.eval(expression);
+      // chrome-api
+      window.$_ = res;
+      return {
+        result: objectFormat(res, { preview: generatePreview }),
+      };
+    } catch (error) {
+      console.error('evaluate', error);
+      return {
+        exceptionDetails: {
+          text: error.message,
+          exception: objectFormat(error),
+        }
+      };
+    }
   }
 
   /**
@@ -288,12 +305,30 @@ export default class Runtime extends BaseDomain {
         return undefined;
       });
     }
+    let result;
+    let error;
+    try {
+      result = fun.apply(objectId ? getObjectById(objectId) : null, args);
+    } catch (err) {
+      error = err;
+    }
     if (silent === true) {
-      try {
-        return fun.apply(objectId ? getObjectById(objectId) : null, args);
-      } catch (error) {}
+      return {
+        result: objectFormat(result),
+        exceptionDetails: error && {
+          text: error.message,
+          exception: objectFormat(error),
+        }
+      }
     } else {
-      return fun.apply(objectId ? getObjectById(objectId) : null, args);
+      console.error(error);
+      return {
+        result: objectFormat(result),
+        exceptionDetails: error && {
+          text: error.message,
+          exception: objectFormat(error),
+        }
+      }
     }
   }
 };

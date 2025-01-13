@@ -15,7 +15,7 @@ export default {
   Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody'],
   Overlay: ['enable', 'highlightNode', 'hideHighlight', 'setInspectMode'],
   Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent'],
-  Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn'],
+  Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames'],
   ScreenPreview: ['startPreview', 'stopPreview'] // ScreenPreview is a custom protocol
 };
 
