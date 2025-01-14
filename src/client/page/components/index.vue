@@ -43,7 +43,9 @@
 <script>
 import uuid from 'string-random';
 import dayjs from 'dayjs';
-const { DEBUG_HOST, DEBUG_PREFIX } = process.env;
+
+const DEBUG_HOST = process.env.DEBUG_HOST;
+const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
 
 export default {
   data() {

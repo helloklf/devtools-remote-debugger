@@ -9,7 +9,9 @@ const getTimestamp = () => Date.now() / 1000;
 
 const originFetch = window.fetch;
 
-const { DEBUG_HOST, DEBUG_PREFIX } = process.env;
+
+const DEBUG_HOST = process.env.DEBUG_HOST;
+const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
 
 export default class Network extends BaseDomain {
   namespace = 'Network';

@@ -2,7 +2,9 @@ import uuid from 'string-random';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { getAbsolutePath } from './common/utils';
 import ChromeDomain from './domain/index';
-const { DEBUG_HOST, DEBUG_PREFIX } = process.env;
+
+const DEBUG_HOST = process.env.DEBUG_HOST;
+const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
 
 function getDocumentFavicon() {
   const links = document.head.querySelectorAll('link');
