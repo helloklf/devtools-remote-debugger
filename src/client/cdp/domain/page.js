@@ -93,6 +93,31 @@ export default class Page extends BaseDomain {
     };
   }
 
+  getNavigationHistory() {
+    return {
+      currentIndex: 0,
+      entries: [
+        {
+          id: 0,
+          url: window.location.href,
+          userTypedURL: window.location.href,
+          title: window.document.title,
+          transitionType: {
+            x: 0,
+            y: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scale: 1,
+          }
+        }
+      ]
+    }
+  }
+
+  reload() {
+    window.location.reload();
+  }
+
   startScreencast() {
     const captureScreen = throttle(() => {
       if (document.hidden) return;

@@ -15,9 +15,10 @@ export default {
   DOMDebugger: ['getEventListeners'],
   Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody'],
   Overlay: ['enable', 'highlightNode', 'hideHighlight', 'setInspectMode'],
-  Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent'],
+  Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent', 'getNavigationHistory', 'reload'],
   Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames'],
-  ScreenPreview: ['startPreview', 'stopPreview'] // ScreenPreview is a custom protocol
+  ScreenPreview: ['startPreview', 'stopPreview'], // ScreenPreview is a custom protocol
+  Input: ['emulateTouchFromMouseEvent', 'dispatchKeyEvent']
 };
 
 export const Event = {

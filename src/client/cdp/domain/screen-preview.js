@@ -45,7 +45,7 @@ function compress(file, quality) {
 const DOM_TO_IMAGE = 'https://unpkg.com/dom-to-image@2.6.0/dist/dom-to-image.min.js';
 const HTML_TO_IMAGE = 'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js';
 
-let useDomToImage = false;
+let useDomToImage = true;
 export default class ScreenPreview extends BaseDomain {
   namespace = 'ScreenPreview';
 
