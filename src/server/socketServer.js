@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const chalk = require('chalk');
 const dayjs = require('dayjs');
+const { DEBUG_PREFIX } = process.env;
 
 const getTime = () => dayjs().format('YYYY-MM-DD HH:mm:ss');
 
@@ -17,7 +18,7 @@ class SocketServer {
     const { wss } = this;
     server.on('upgrade', (request, socket, head) => {
       const urlParse = new URL(request.url, 'http://0.0.0.0');
-      const pathname = urlParse.pathname.replace('/remote/debug', '');
+      const pathname = urlParse.pathname.replace(DEBUG_PREFIX, '');
       const [, from, id] = pathname.split('/');
 
       if (from !== 'devtools' && from !== 'client') return;

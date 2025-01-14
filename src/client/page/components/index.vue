@@ -43,6 +43,7 @@
 <script>
 import uuid from 'string-random';
 import dayjs from 'dayjs';
+const { DEBUG_HOST, DEBUG_PREFIX } = process.env;
 
 export default {
   data() {
@@ -61,14 +62,14 @@ export default {
       this.currentTargets = this.filter(this.targets);
     },
     onClick(id) {
-      const domain = process.env.DEBUG_HOST.replace(/^(http|https):\/\//ig, '');
       const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsUrl = encodeURIComponent(`${domain}/remote/debug/devtools/${uuid()}?clientId=${id}`);
-      const url = `${location.protocol}//${domain}/remote/debug/front_end/devtools_app.html?${protocol}=${wsUrl}`;
+      const domain = DEBUG_HOST.replace(/^(http|https):\/\//ig, '');
+      const wsUrl = encodeURIComponent(`${domain}${DEBUG_PREFIX}/devtools/${uuid()}?clientId=${id}`);
+      const url = `${location.protocol}//${domain}${DEBUG_PREFIX}/front_end/devtools_app.html?${protocol}=${wsUrl}`;
       window.open(url);
     },
     getData() {
-      const url = `${process.env.DEBUG_HOST}/remote/debug/json`;
+      const url = `${DEBUG_HOST}${DEBUG_PREFIX}/json`;
       return fetch(url, {
         method: 'GET',
       }).then(res => res.json())

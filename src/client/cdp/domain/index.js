@@ -1,5 +1,6 @@
 import Dom from './dom';
 import DomStorage from './dom-storage';
+import CacheStorage from './cache-storage';
 import DomDebugger from './dom-debugger';
 import Storage from './storage';
 import Overlay from './overlay';
@@ -41,6 +42,7 @@ export default class ChromeDomain {
       new Dom(options),
       new DomDebugger(options),
       new DomStorage(options),
+      new CacheStorage(options),
       new Storage(options),
       new Overlay(options),
       new Runtime(options),

@@ -6,7 +6,7 @@ export default class Debugger extends BaseDomain {
   namespace = 'Debugger';
 
   // collection of javascript scripts
-  scripts = new Map();
+  scripts = new Map(); // { id: { url, content } }
 
   // Unique id for javascript scripts
   scriptId = 0;
@@ -42,6 +42,19 @@ export default class Debugger extends BaseDomain {
     return {
       scriptSource: this.getScriptSourceById(scriptId)
     };
+  }
+
+  setScriptSource ({ scriptId, scriptSource }) {
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        action: 'cdp_override_add',
+        url: this.scripts.get(scriptId).url,
+        content: scriptSource,
+        contentType: ''
+      })
+    } else {
+      console.wran('Script source overrides need to be registered cdp_overrides.js (Worker Service)')
+    }
   }
 
   /**
@@ -95,10 +108,16 @@ export default class Debugger extends BaseDomain {
     const xhr = new XMLHttpRequest();
     xhr.$$requestType = 'Script';
     xhr.onload = () => {
-      this.scripts.set(scriptId, xhr.responseText);
+      this.scripts.set(scriptId, {
+        url,
+        content: xhr.responseText
+      });
     };
     xhr.onerror = () => {
-      this.scripts.set(scriptId, 'Cannot get script source code');
+      this.scripts.set(scriptId, {
+        url,
+        content: 'Cannot get script source code'
+      });
     };
 
     xhr.open('GET', url);
@@ -112,7 +131,7 @@ export default class Debugger extends BaseDomain {
    * @param {Number} param.scriptId javascript script unique id
    */
   getScriptSourceById(scriptId) {
-    return this.scripts.get(scriptId);
+    return this.scripts.get(scriptId).content;
   }
 
   /**

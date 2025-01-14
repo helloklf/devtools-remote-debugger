@@ -2,9 +2,10 @@
 export default {
   CSS: ['enable', 'getStyleSheetText', 'getMatchedStylesForNode', 'getComputedStyleForNode',
     'getInlineStylesForNode', 'getDynamicLink', 'addRule', 'createStyleSheet', 'setStyleTexts',],
-  Debugger: ['enable', 'getScriptSource', 'getDynamicScript'],
+  Debugger: ['enable', 'getScriptSource', 'setScriptSource', 'getDynamicScript'],
   DOMStorage: ['enable', 'getDOMStorageItems', 'removeDOMStorageItem', 'clear', 'setDOMStorageItem'],
   Storage: ['getStorageKeyForFrame'],
+  CacheStorage: ['requestCacheNames', 'requestEntries'],
   DOM: [
     'enable', 'getDocument', 'removeNode', 'requestChildNodes', 'requestNode', 'getOuterHTML',
     'setOuterHTML', 'setAttributesAsText', 'setInspectedNode', 'pushNodesByBackendIdsToFrontend',

@@ -74,7 +74,7 @@ export default {
     },
     openDemo() {
       window.open(
-        `${process.env.DEBUG_HOST}/remote/debug/example/index.html`,
+        `${process.env.DEBUG_HOST}${process.env.DEBUG_PREFIX}/example/index.html`,
         'new',
         'height=667,width=375'
       );

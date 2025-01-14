@@ -2,6 +2,7 @@ import uuid from 'string-random';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { getAbsolutePath } from './common/utils';
 import ChromeDomain from './domain/index';
+const { DEBUG_HOST, DEBUG_PREFIX } = process.env;
 
 function getDocumentFavicon() {
   const links = document.head.querySelectorAll('link');
@@ -41,15 +42,24 @@ function getQuery() {
 
 function initSocket() {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = process.env.DEBUG_HOST.replace(/^(http|https):\/\//ig, '');
-  const socket = new ReconnectingWebSocket(`${protocol}//${host}/remote/debug/client/${getId()}?${getQuery()}`);
+  const host = DEBUG_HOST.replace(/^(http|https):\/\//ig, '');
+  const socket = new ReconnectingWebSocket(`${protocol}//${host}${DEBUG_PREFIX}/client/${getId()}?${getQuery()}`);
   const domain = new ChromeDomain({ socket });
 
   socket.addEventListener('message', ({ data }) => {
     try {
       const message = JSON.parse(data);
       const ret = domain.execute(message);
-      socket.send(JSON.stringify(ret));
+      if (ret.result && ret.result instanceof Promise) {
+        ret.result.then(result => {
+          socket.send(JSON.stringify({
+            ...ret,
+            result
+          }));
+        })
+      } else {
+        socket.send(JSON.stringify(ret));
+      }
     } catch (e) {
       console.log(e);
     }

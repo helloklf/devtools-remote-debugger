@@ -3,10 +3,13 @@ import mime from 'mime/lite';
 import { getAbsolutePath, key2UpperCase } from '../common/utils';
 import BaseDomain from './domain';
 import { Event } from './protocol';
+import Runtime from './runtime';
 
 const getTimestamp = () => Date.now() / 1000;
 
 const originFetch = window.fetch;
+
+const { DEBUG_HOST, DEBUG_PREFIX } = process.env;
 
 export default class Network extends BaseDomain {
   namespace = 'Network';
@@ -171,6 +174,13 @@ export default class Network extends BaseDomain {
           documentURL: location.href,
           timestamp: getTimestamp(),
           wallTime: Date.now(),
+          // FIXME: With this, we still can't see the caller
+          initiator: {
+            type: 'script',
+            stack: {
+              callFrames: Runtime.getCallFrames(),
+            }
+          },
           type: this.$$requestType || 'XHR',
         }
       });
@@ -187,6 +197,7 @@ export default class Network extends BaseDomain {
             blockedCookies: [],
             headersText: headers,
             type: this.$$requestType || 'XHR',
+            mimeType: this.responseType || ((this.getResponseHeader('content-type') || '').split(';')[0]),
             status: this.status,
             statusText: this.statusText,
             encodedDataLength: Number(this.getResponseHeader('Content-Length')),
@@ -270,6 +281,7 @@ export default class Network extends BaseDomain {
           headersText += `${key}: ${val}\r\n`;
         });
 
+        const contentType = headers.get('Content-Type') || "";
         instance.sendNetworkEvent({
           url,
           requestId,
@@ -277,12 +289,12 @@ export default class Network extends BaseDomain {
           statusText,
           headersText,
           type: 'Fetch',
+          mimeType: (contentType || '').split(';')[0],
           blockedCookies: [],
           headers: responseHeaders,
           encodedDataLength: Number(headers.get('Content-Length')),
         });
 
-        const contentType = headers.get('Content-Type') || "";
         if (['application/json', 'application/javascript', 'text/plain', 'text/html', 'text/css'].some(type => contentType.includes(type))) {
           return response.clone().text();
         }
@@ -317,8 +329,11 @@ export default class Network extends BaseDomain {
         const requestId = this.getRequestId();
 
         try {
-          const { base64 } = await originFetch(
-            `${process.env.DEBUG_HOST}/remote/debug/image_base64?url=${encodeURIComponent(url)}`
+          
+          const { base64 } = url.startsWith('data:image') ? { base64: url } : (
+            await originFetch(
+              `${DEBUG_HOST}${DEBUG_PREFIX}/image_base64?url=${encodeURIComponent(url)}`
+            )
           )
             .then(res => res.json());
 
@@ -390,7 +405,7 @@ export default class Network extends BaseDomain {
    */
   sendNetworkEvent(params) {
     const {
-      requestId, headers, headersText, type, url,
+      requestId, headers, headersText, type, mimeType, url,
       status, statusText, encodedDataLength,
     } = params;
 
@@ -403,9 +418,16 @@ export default class Network extends BaseDomain {
       method: Event.responseReceived,
       params: {
         type,
+        mimeType,
         requestId,
         timestamp: getTimestamp(),
-        response: { url, status, statusText, headers, mimeType: mime.getType(url) }
+        response: {
+          url,
+          status,
+          statusText,
+          headers,
+          mimeType: mimeType || mime.getType(url)
+        }
       },
     });
 

@@ -1,6 +1,7 @@
 import ScreenPreview from './screen-preview';
 import BaseDomain from './domain';
 import { Event } from './protocol';
+import throttle from 'lodash.throttle';
 
 function cropImage(base64, { left, top }) {
   return new Promise((resolve) => {
@@ -41,6 +42,7 @@ export default class Page extends BaseDomain {
   namespace = 'Page';
   prevImage = '';
   prevOffset = '';
+  observerInst = null;
   frame = new Map();
 
   /**
@@ -92,11 +94,11 @@ export default class Page extends BaseDomain {
   }
 
   startScreencast() {
-    const captureScreen = () => {
+    const captureScreen = throttle(() => {
       if (document.hidden) return;
       ScreenPreview.captureScreen().then((base64) => {
-        const left = document.body.scrollLeft;
-        const top = document.body.scrollTop;
+        const left = document.body.scrollLeft || window.document.documentElement.scrollLeft;
+        const top = document.body.scrollTop || window.document.documentElement.scrollTop;
         if (this.prevImage === base64 && `${left}|${top}` === this.prevOffset) return;
         this.prevImage = base64;
         this.prevOffset = `${left}|${top}`;
@@ -119,14 +121,25 @@ export default class Page extends BaseDomain {
           });
         })
       });
-    };
+    }, 350);
 
     captureScreen();
 
-    this.intervalTimer = setInterval(captureScreen, 2000);
+    // Observe the changes of the document
+    this.observerInst = new MutationObserver(captureScreen);
+
+    this.observerInst.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true,
+    });
+
+    this.intervalTimer = setInterval(captureScreen, 1000);
   }
 
   stopScreencast() {
+    this.observerInst && this.observerInst.disconnect();
     if (this.intervalTimer) {
       clearInterval(this.intervalTimer);
       this.intervalTimer = null;

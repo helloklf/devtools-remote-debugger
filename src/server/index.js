@@ -12,7 +12,7 @@ require('dotenv').config({
   path: path.resolve(process.cwd(), process.env.NODE_ENV === 'development' ? '.env.dev' : '.env'),
 });
 
-const prefix = '/remote/debug';
+const { DEBUG_PREFIX, DEBUG_PORT } = process.env;
 
 const compress = koaCompress({
   threshold: 2048,
@@ -28,7 +28,7 @@ const compress = koaCompress({
   br: false,
 });
 
-async function start({ port, host } = {}) {
+async function start() {
   const app = new Koa();
   const wss = new SocketServer();
   const router = getRouter(wss.clients);
@@ -38,14 +38,18 @@ async function start({ port, host } = {}) {
     .use(router)
     .use(compress);
 
-  const server = app.listen(port, host || '0.0.0.0');
+  const server = app.listen(DEBUG_PORT, '0.0.0.0');
   wss.initSocketServer(server);
 
-  console.log(`serve start at:  http://${host||'localhost'}:${port}\n\n`);
+  console.log(`serve start at:  http://localhost:${DEBUG_PORT}\n\n`);
 }
 
 function getRouter(clients) {
-  const router = new KoaRouter({ prefix });
+  const getFilePath = function (path) {
+    return path.replace(`${DEBUG_PREFIX}/`, '');
+  }
+
+  const router = new KoaRouter({ DEBUG_PREFIX });
 
   router.get('/', async (ctx) => {
     await send(ctx, getFilePath(ctx.path + "index.html"), {
@@ -56,6 +60,12 @@ function getRouter(clients) {
   router.get('/index.html', async (ctx) => {
     await send(ctx, getFilePath(ctx.path), {
       root: path.resolve(__dirname, '../../dist/page'),
+    });
+  });
+
+  router.get('/cdp_overrides.js', async (ctx) => {
+    await send(ctx, getFilePath(ctx.path), {
+      root: path.resolve(__dirname, '../client'),
     });
   });
 
@@ -98,10 +108,4 @@ function getRouter(clients) {
   return router.routes();
 }
 
-function getFilePath(path) {
-  return path.replace(`${prefix}/`, '');
-}
-
-start({
-  port: process.env.DEBUG_PORT,
-});
+start();
