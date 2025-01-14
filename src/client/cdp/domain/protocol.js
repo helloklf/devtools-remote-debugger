@@ -5,7 +5,7 @@ export default {
   Debugger: ['enable', 'getScriptSource', 'setScriptSource', 'getDynamicScript'],
   DOMStorage: ['enable', 'getDOMStorageItems', 'removeDOMStorageItem', 'clear', 'setDOMStorageItem'],
   Storage: ['getStorageKeyForFrame'],
-  CacheStorage: ['requestCacheNames', 'requestEntries'],
+  CacheStorage: ['requestCacheNames', 'requestEntries', 'requestCachedResponse', 'deleteCache', 'deleteEntry'],
   DOM: [
     'enable', 'getDocument', 'removeNode', 'requestChildNodes', 'requestNode', 'getOuterHTML',
     'setOuterHTML', 'setAttributesAsText', 'setInspectedNode', 'pushNodesByBackendIdsToFrontend',
