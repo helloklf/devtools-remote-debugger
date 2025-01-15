@@ -75,6 +75,10 @@ export default class DomStorage extends BaseDomain {
               clientY: y
             })
             target.dispatchEvent(clickEvent)
+            if (target !== document.activeElement) {
+              document.activeElement.blur()
+            }
+            target.focus()
           }
           this.mousePressed = { x: -1, y: -1 }
         }
@@ -84,23 +88,72 @@ export default class DomStorage extends BaseDomain {
   }
 
   dispatchKeyEvent(rawData) {
-    // 创建一个新的 KeyboardEvent 对象
-    const keyboardEvent = new KeyboardEvent(
-      (rawData.type || 'keydown').toLowerCase(),
-      {
-        key: rawData.key,
-        code: rawData.code,
-        keyCode: rawData.windowsVirtualKeyCode,
-        charCode: rawData.nativeVirtualKeyCode,
-        which: rawData.windowsVirtualKeyCode,
-        shiftKey: (rawData.modifiers & 0x1) !== 0,
-        ctrlKey: (rawData.modifiers & 0x2) !== 0,
-        altKey: (rawData.modifiers & 0x4) !== 0,
-        metaKey: (rawData.modifiers & 0x8) !== 0,
-        repeat: rawData.autoRepeat,
-        isComposing: false
+    const target = document.activeElement || window
+    switch (rawData.type) {
+      case 'keyDown':
+      case 'keyUp': {
+        const attrs = {
+          key: rawData.key,
+          code: rawData.code,
+          keyCode: rawData.windowsVirtualKeyCode,
+          charCode: rawData.nativeVirtualKeyCode,
+          which: rawData.windowsVirtualKeyCode,
+          shiftKey: (rawData.modifiers & 0x1) !== 0,
+          ctrlKey: (rawData.modifiers & 0x2) !== 0,
+          altKey: (rawData.modifiers & 0x4) !== 0,
+          metaKey: (rawData.modifiers & 0x8) !== 0,
+          repeat: rawData.autoRepeat,
+          isComposing: false
+        }
+        const keydownEvent = new KeyboardEvent(rawData.type.toLowerCase(), attrs);
+        target.dispatchEvent(keydownEvent);
+        if (rawData.type === 'keyDown') {
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+            let change = false
+            if (rawData.key === 'Backspace') {
+              if (target.value) {
+                target.value = target.value.slice(0, -1)
+                change = true
+              }
+            }
+            if (change) {
+              const inputEvent = new InputEvent('input', {
+                bubbles: true,
+                cancelable: true,
+                data: rawData.text
+              });
+              target.dispatchEvent(inputEvent)
+            }
+          }
+        }
+        break
       }
-    );
-    window.dispatchEvent(keyboardEvent);
+      case 'char': {
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+          let change = false
+          if (rawData.text) {
+            const len = target.maxlength
+            if (len !== undefined) {
+              const nextValue = target.value.slice(0, len)
+              if (nextValue !== target.value) {
+                target.value = nextValue
+                change = true
+              }
+            } else {
+              target.value += rawData.text
+              change = true
+            }
+          }
+          if (change) {
+            const inputEvent = new InputEvent('input', {
+              bubbles: true,
+              cancelable: true,
+              data: rawData.text
+            });
+            target.dispatchEvent(inputEvent)
+          }
+        }
+      }
+    }
   }
 }
