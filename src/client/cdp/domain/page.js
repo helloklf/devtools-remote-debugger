@@ -44,15 +44,23 @@ export default class Page extends BaseDomain {
   prevOffset = '';
   observerInst = null;
   frame = new Map();
+  sent = false;
 
   /**
 
    * @public
    */
   enable() {
+    // Avoid getting html content repeatedly when the socket is reconnected
+    if (this.sent) {
+      return;
+    }
+
     const xhr = new XMLHttpRequest();
     xhr.$$requestType = 'Document';
+    xhr.__initiator = null;
     xhr.onload = () => {
+      this.sent = true;
       this.frame.set(location.href, xhr.responseText);
     };
     xhr.onerror = () => {

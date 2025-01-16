@@ -3,12 +3,11 @@ import mime from 'mime/lite';
 import { getAbsolutePath, key2UpperCase } from '../common/utils';
 import BaseDomain from './domain';
 import { Event } from './protocol';
-import Runtime from './runtime';
+import Runtime, { cdpJsName } from './runtime';
 
 const getTimestamp = () => Date.now() / 1000;
 
 const originFetch = window.fetch;
-
 
 const DEBUG_HOST = process.env.DEBUG_HOST;
 const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
@@ -20,6 +19,7 @@ export default class Network extends BaseDomain {
   requestId = 0;
 
   responseData = new Map();
+  requestData = new Map();
 
   cacheRequest = [];
 
@@ -98,6 +98,10 @@ export default class Network extends BaseDomain {
     return { body, base64Encoded };
   }
 
+  getRequestPostData ({ requestId }) {
+    return { postData: { requestId } }
+  }
+
   /**
    * @public
    */
@@ -169,6 +173,7 @@ export default class Network extends BaseDomain {
       }
 
       if (!this.__cdp) {
+        instance.requestData[requestId] = request.postData
         instance.socketSend({
           method: Event.requestWillBeSent,
           params: {
@@ -177,13 +182,16 @@ export default class Network extends BaseDomain {
             documentURL: location.href,
             timestamp: getTimestamp(),
             wallTime: Date.now(),
-            // FIXME: With this, we still can't see the caller
-            initiator: {
+            initiator: this.__initiator === undefined ? {
               type: 'script',
               stack: {
-                callFrames: Runtime.getCallFrames(),
+                callFrames: Runtime.getCallFrames().filter(it => {
+                  return !(
+                    it.functionName === 'XMLHttpRequest.send' && ((it.url || '').lastIndexOf(cdpJsName) > -1)
+                  )
+                }),
               }
-            },
+            } : this.__initiator,
             type: this.$$requestType || 'XHR',
           }
         });
@@ -200,7 +208,7 @@ export default class Network extends BaseDomain {
               blockedCookies: [],
               headersText: headers,
               type: this.$$requestType || 'XHR',
-              mimeType: this.responseType || ((this.getResponseHeader('content-type') || '').split(';')[0]),
+              mimeType: this.responseType || ((this.getResponseHeader('Content-Type') || '').split(';')[0]),
               status: this.status,
               statusText: this.statusText,
               encodedDataLength: Number(this.getResponseHeader('Content-Length')),

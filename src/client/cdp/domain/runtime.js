@@ -5,6 +5,12 @@ import { Event } from './protocol';
 
 const callsite = require('callsite');
 
+export const cdpJsName = (function() {
+  const me = document.currentScript;
+  const src = me.src;
+  return src.substring(src.lastIndexOf('/') + 1);
+})()
+
 export default class Runtime extends BaseDomain {
   namespace = 'Runtime';
 
@@ -124,12 +130,15 @@ export default class Runtime extends BaseDomain {
       }));
       // Safari does not support captureStackTrace
     } else if (Error.captureStackTrace) {
-      callFrames = callsite().map(val => ({
-        functionName: val.getFunctionName(),
-        lineNumber: val.getLineNumber(),
-        columnNumber: val.getColumnNumber(),
-        url: val.getFileName(),
-      }));
+      callFrames = callsite().map(val => {
+        const frame = {
+          functionName: val.getFunctionName(),
+          lineNumber: val.getLineNumber(),
+          columnNumber: val.getColumnNumber(),
+          url: val.getFileName(),
+        };
+        return frame;
+      });
     } else {
       callFrames = ErrorStackParser.parse(new Error()).map(frame => ({
         ...frame,
@@ -137,7 +146,7 @@ export default class Runtime extends BaseDomain {
       }));
     }
 
-    return callFrames;
+    return callFrames.filter(it => it.functionName !== 'Runtime.getCallFrames');
   }
 
   globalLexicalScopeNames () {
@@ -214,6 +223,11 @@ export default class Runtime extends BaseDomain {
     objectRelease(params);
   }
 
+  discardConsoleEntries () {
+    this.cacheConsole = []
+    this.cacheError = []
+  }
+
   /**
    * Intercept method of console object
    * @private
@@ -253,7 +267,7 @@ export default class Runtime extends BaseDomain {
             timestamp: Date.now(),
             stackTrace: {
               // processing call stack
-              callFrames: ['error', 'warn', 'trace', 'assert'].includes(key) ? Runtime.getCallFrames() : [],
+              callFrames: ['error', 'warn', 'trace', 'assert'].includes(key) ? Runtime.getCallFrames().slice(1) : [],
             }
           }
         };
