@@ -13,10 +13,10 @@ export default {
     'getBoxModel',
   ],
   DOMDebugger: ['getEventListeners'],
-  Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody'],
+  Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody', 'getRequestPostData'],
   Overlay: ['enable', 'highlightNode', 'hideHighlight', 'setInspectMode'],
   Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent', 'getNavigationHistory', 'reload', 'navigate'],
-  Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames'],
+  Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames', 'discardConsoleEntries'],
   ScreenPreview: ['startPreview', 'stopPreview'], // ScreenPreview is a custom protocol
   Input: ['emulateTouchFromMouseEvent', 'dispatchKeyEvent']
 };

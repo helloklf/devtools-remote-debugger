@@ -87,7 +87,12 @@ export default class Debugger extends BaseDomain {
     const scriptElements = document.querySelectorAll('script');
     const ret = [];
     scriptElements.forEach((script) => {
+      // Avoid getting script source code repeatedly when socket reconnects
+      if (script.scriptId) {
+        return;
+      }
       const scriptId = this.getScriptId();
+      script.scriptId = scriptId;
       const src = script.getAttribute('src');
       if (src) {
         const url = getAbsolutePath(src);
@@ -107,6 +112,7 @@ export default class Debugger extends BaseDomain {
   fetchScriptSource(scriptId, url) {
     const xhr = new XMLHttpRequest();
     xhr.$$requestType = 'Script';
+    xhr.__initiator = null;
     xhr.onload = () => {
       this.scripts.set(scriptId, {
         url,

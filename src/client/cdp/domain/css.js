@@ -286,6 +286,7 @@ export default class CSS extends BaseDomain {
   fetchStyleSource(styleSheetId, url) {
     const xhr = new XMLHttpRequest();
     xhr.$$requestType = 'Stylesheet';
+    xhr.__initiator = null;
     xhr.onload = () => {
       const content = xhr.responseText;
       this.styles.set(styleSheetId, content);
