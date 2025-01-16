@@ -13,8 +13,16 @@
           {{ row.pageUrl }} <a :href="row.pageUrl" target="_blank">🌍</a>
         </template>
       </el-table-column>
-      <el-table-column prop="ua" label="UserAgent" />
-      <el-table-column prop="time" :label="$t('time')" :width="180" />
+      <el-table-column prop="ua" label="UserAgent">
+        <template #default="{ row }">
+          <small>{{ row.ua }}</small>
+        </template>
+      </el-table-column>
+      <el-table-column prop="time" :label="$t('time')" :width="150">
+        <template #default="{ row }">
+          <small>{{ row.time }}</small>
+        </template>
+      </el-table-column>
       <el-table-column prop="platform" :label="$t('platform')" :width="100">
         <template #default="{ row }">
           <svg v-if="row.platform === 'android'" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2423" width="40" height="40">
@@ -102,11 +110,14 @@ export default {
 .main {
   padding: 16px 32px;
 }
+.main a,
+.main small {
+  font-size: 0.75em;
+  line-height: 1;
+}
 .main a {
   text-decoration: none;
   color: inherit;
-  font-size: 0.8em;
-  line-height: 1;
 }
 
 .main .el-table_1_column_1 {
