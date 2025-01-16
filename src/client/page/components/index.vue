@@ -10,7 +10,7 @@
       <el-table-column prop="title" :label="$t('title')" :width="150" />
       <el-table-column prop="pageUrl" :label="$t('pageUrl')">
         <template #default="{ row }">
-          <a :href="row.pageUrl" target="_blank">{{ row.pageUrl }}</a>
+          {{ row.pageUrl }} <a :href="row.pageUrl" target="_blank">🌍</a>
         </template>
       </el-table-column>
       <el-table-column prop="ua" label="UserAgent" />
@@ -101,6 +101,12 @@ export default {
 <style>
 .main {
   padding: 16px 32px;
+}
+.main a {
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.8em;
+  line-height: 1;
 }
 
 .main .el-table_1_column_1 {

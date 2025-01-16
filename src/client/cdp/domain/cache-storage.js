@@ -3,17 +3,19 @@ export default class DomStorage extends BaseDomain {
   namespace = 'CacheStorage';
 
   async requestCacheNames ({ securityOrigin, storageKey }) {
-    const caches = await window.caches.keys()
-    return {
-      caches: caches.filter(it => !storageKey || it === storageKey).map(cache => {
-        const origin = securityOrigin || window.location.origin
-        return {
-          cacheId: cache,
-          securityOrigin: origin,
-          storageKey: cache,
-          cacheName: cache
-        }
-      })
+    if (window.caches) {
+      const caches = await window.caches.keys()
+      return {
+        caches: caches.filter(it => !storageKey || it === storageKey).map(cache => {
+          const origin = securityOrigin || window.location.origin
+          return {
+            cacheId: cache,
+            securityOrigin: origin,
+            storageKey: cache,
+            cacheName: cache
+          }
+        })
+      }
     }
   }
 
