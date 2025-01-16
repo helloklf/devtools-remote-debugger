@@ -54,6 +54,17 @@ class SocketServer {
     console.log(`${getTime()} ${chalk.bgCyan(chalk.black('client:'))} ${id} ${chalk.green('')}`);
 
     const sendToDevtools = (message) => {
+      // Heartbeat
+      if (message === '{}') {
+        return;
+      }
+      if (message.includes('__SOCKET_INFO_UPDATE__')) {
+        const info = JSON.parse(message)
+        if (info.method === '__SOCKET_INFO_UPDATE__') {
+          this.clients[id] = { ...this.clients[id], ...info.params };
+          return;
+        }
+      }
       Object.values(this.devtools).forEach((devtool) => {
         if (devtool.clientId === id) {
           devtool.ws.send(message);

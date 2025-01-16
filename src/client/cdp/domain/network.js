@@ -168,51 +168,53 @@ export default class Network extends BaseDomain {
         request.hasPostData = !!data;
       }
 
-      instance.socketSend({
-        method: Event.requestWillBeSent,
-        params: {
-          requestId,
-          request,
-          documentURL: location.href,
-          timestamp: getTimestamp(),
-          wallTime: Date.now(),
-          // FIXME: With this, we still can't see the caller
-          initiator: {
-            type: 'script',
-            stack: {
-              callFrames: Runtime.getCallFrames(),
-            }
-          },
-          type: this.$$requestType || 'XHR',
-        }
-      });
-
-      this.addEventListener('readystatechange', () => {
-        // After the request is completed, get the http response header
-        if (this.readyState === 4) {
-          const headers = this.getAllResponseHeaders();
-          const responseHeaders = Network.formatResponseHeader(headers);
-          instance.sendNetworkEvent({
+      if (!this.__cdp) {
+        instance.socketSend({
+          method: Event.requestWillBeSent,
+          params: {
             requestId,
-            url: getAbsolutePath(url),
-            headers: responseHeaders,
-            blockedCookies: [],
-            headersText: headers,
+            request,
+            documentURL: location.href,
+            timestamp: getTimestamp(),
+            wallTime: Date.now(),
+            // FIXME: With this, we still can't see the caller
+            initiator: {
+              type: 'script',
+              stack: {
+                callFrames: Runtime.getCallFrames(),
+              }
+            },
             type: this.$$requestType || 'XHR',
-            mimeType: this.responseType || ((this.getResponseHeader('content-type') || '').split(';')[0]),
-            status: this.status,
-            statusText: this.statusText,
-            encodedDataLength: Number(this.getResponseHeader('Content-Length')),
-          });
-        }
-      });
+          }
+        });
 
-      this.addEventListener('load', () => {
-        if (this.responseType === '' || this.responseType === 'text') {
-          // Cache the response result after the request ends, which will be used when getResponseBody
-          instance.responseData.set(this.$$request.requestId, this.responseText);
-        }
-      });
+        this.addEventListener('readystatechange', () => {
+          // After the request is completed, get the http response header
+          if (this.readyState === 4) {
+            const headers = this.getAllResponseHeaders();
+            const responseHeaders = Network.formatResponseHeader(headers);
+            instance.sendNetworkEvent({
+              requestId,
+              url: getAbsolutePath(url),
+              headers: responseHeaders,
+              blockedCookies: [],
+              headersText: headers,
+              type: this.$$requestType || 'XHR',
+              mimeType: this.responseType || ((this.getResponseHeader('content-type') || '').split(';')[0]),
+              status: this.status,
+              statusText: this.statusText,
+              encodedDataLength: Number(this.getResponseHeader('Content-Length')),
+            });
+          }
+        });
+  
+        this.addEventListener('load', () => {
+          if (this.responseType === '' || this.responseType === 'text') {
+            // Cache the response result after the request ends, which will be used when getResponseBody
+            instance.responseData.set(this.$$request.requestId, this.responseText);
+          }
+        });
+      }
     };
 
     XMLHttpRequest.prototype.setRequestHeader = function (key, value) {

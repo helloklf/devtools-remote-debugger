@@ -15,13 +15,15 @@ export default {
   DOMDebugger: ['getEventListeners'],
   Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody'],
   Overlay: ['enable', 'highlightNode', 'hideHighlight', 'setInspectMode'],
-  Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent', 'getNavigationHistory', 'reload'],
+  Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent', 'getNavigationHistory', 'reload', 'navigate'],
   Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames'],
   ScreenPreview: ['startPreview', 'stopPreview'], // ScreenPreview is a custom protocol
   Input: ['emulateTouchFromMouseEvent', 'dispatchKeyEvent']
 };
 
 export const Event = {
+  SOCKET_INFO_UPDATE: '__SOCKET_INFO_UPDATE__',
+
   styleSheetAdded: 'CSS.styleSheetAdded',
 
   scriptParsed: 'Debugger.scriptParsed',

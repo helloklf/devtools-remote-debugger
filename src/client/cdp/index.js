@@ -2,6 +2,8 @@ import uuid from 'string-random';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { getAbsolutePath } from './common/utils';
 import ChromeDomain from './domain/index';
+import startWatch from './common/routerWatch';
+import { Event } from './domain/protocol';
 
 const DEBUG_HOST = process.env.DEBUG_HOST;
 const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
@@ -21,6 +23,16 @@ function getDocumentFavicon() {
   return iconUrl;
 }
 
+function getQuery() {
+  const search = new URLSearchParams();
+  search.append('url', location.href);
+  search.append('title', document.title);
+  search.append('favicon', getDocumentFavicon());
+  search.append('time', Date.now());
+  search.append('ua', navigator.userAgent);
+  return search.toString();
+}
+
 // debug id
 function getId() {
   let id = sessionStorage.getItem('debug_id');
@@ -30,16 +42,6 @@ function getId() {
   }
 
   return id;
-}
-
-function getQuery() {
-  const search = new URLSearchParams();
-  search.append('url', location.href);
-  search.append('title', document.title);
-  search.append('favicon', getDocumentFavicon());
-  search.append('time', Date.now());
-  search.append('ua', navigator.userAgent);
-  return search.toString();
 }
 
 function initSocket() {
@@ -67,6 +69,13 @@ function initSocket() {
     }
   });
 
+
+  startWatch((pageInfo) => {
+    socket.send(JSON.stringify({
+      method: Event.SOCKET_INFO_UPDATE,
+      params: pageInfo
+    }));
+  });
   let heartbeat;
   socket.addEventListener('open', () => {
     // Heartbeat keep alive
@@ -74,7 +83,6 @@ function initSocket() {
       socket.send('{}');
     }, 10000);
   });
-
   socket.addEventListener('close', () => {
     clearInterval(heartbeat);
   });

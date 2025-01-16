@@ -118,6 +118,10 @@ export default class Page extends BaseDomain {
     window.location.reload();
   }
 
+  navigate ({ url }) {
+    window.location.href = url
+  }
+
   startScreencast() {
     const captureScreen = throttle(() => {
       if (document.hidden) return;

@@ -3,46 +3,8 @@ import { isMatches, isMobile, loadScript } from '../common/utils';
 import { DEVTOOL_OVERLAY, HTML_TO_CANVAS_CANVAS } from '../common/constant';
 import BaseDomain from './domain';
 import { Event } from './protocol';
-/*
-import Compressor from 'compressorjs';
+import domToImage from '../common/domToImage';
 
-function captureAndCompress(element, quality) {
-  html2canvas(element).then(canvas => {
-    canvas.toBlob(blob => {
-      if (blob) {
-        compress(blob, quality).then(compressedFile => {
-          // 处理压缩后的文件
-          console.log('Compressed file:', compressedFile);
-        }).catch(err => {
-          console.error('Compression error:', err);
-        });
-      }
-    });
-  });
-}
-
-function compress(file, quality) {
-  return new Promise((resolve, reject) => {
-    new Compressor(file, {
-      quality,
-      success(result) {
-        if (result instanceof Blob) {
-          // 为了保持一致性，转为File对象
-          resolve(new window.File([result], file.name, { type: file.type }));
-        } else {
-          resolve(result);
-        }
-        // downloadFile(result, file.name);
-      },
-      error(err) {
-        reject(err);
-      },
-    });
-  });
-}
-*/
-
-const DOM_TO_IMAGE = 'https://unpkg.com/dom-to-image@2.6.0/dist/dom-to-image.min.js';
 const HTML_TO_IMAGE = 'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js';
 
 let useDomToImage = true;
@@ -62,20 +24,13 @@ export default class ScreenPreview extends BaseDomain {
   static captureScreen = throttle(() => {
     // Faster and less dom contamination
     if (useDomToImage) {
-      const renderScreen = () => {
-        return window.domtoimage.toJpeg(document.body, {
-          quality: 0.6,
-          filter: (ele) => !ScreenPreview.elementExclude(ele)
-        }).catch(e => {
-          console.error('Failed to capture screen with dom-to-image:', e);
-          useDomToImage = false;
-        });
-      }
-      if (window.domtoimage) {
-        return renderScreen();
-      }
-  
-      return loadScript(DOM_TO_IMAGE).then(renderScreen);
+      return domToImage.toJpeg(document.body, {
+        quality: 0.6,
+        filter: (ele) => !ScreenPreview.elementExclude(ele)
+      }).catch(e => {
+        console.error('Failed to capture screen with dom-to-image:', e);
+        useDomToImage = false;
+      });
     } else {
       const canvas = document.createElement('canvas');
       canvas.className = HTML_TO_CANVAS_CANVAS;
