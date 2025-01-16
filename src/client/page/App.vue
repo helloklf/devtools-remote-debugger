@@ -33,7 +33,7 @@
           @change="onLocalChange"
         />
 
-        <a href="https://github.com/Nice-PLQ/devtools-remote-debugger" target="_blank" style="margin-left:16px;font-size:0;">
+        <a href="https://github.com/helloklf/devtools-remote-debugger" target="_blank" style="margin-left:16px;font-size:0;">
           <svg
             viewBox="0 0 1024 1024"
             version="1.1"
