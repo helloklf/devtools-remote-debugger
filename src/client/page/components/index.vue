@@ -10,7 +10,8 @@
       <el-table-column prop="title" :label="$t('title')" :width="140" />
       <el-table-column prop="pageUrl" :label="$t('pageUrl')">
         <template #default="{ row }">
-          {{ row.pageUrl }} <a :href="row.pageUrl" target="_blank">🌍</a>
+          <small>{{ row.pageUrl }}</small>
+          <a :href="row.pageUrl" target="_blank">🌍</a>
         </template>
       </el-table-column>
       <el-table-column prop="ua" label="UserAgent">

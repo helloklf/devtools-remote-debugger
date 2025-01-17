@@ -13,7 +13,7 @@ export default {
     'getBoxModel',
   ],
   DOMDebugger: ['getEventListeners'],
-  Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody', 'getRequestPostData'],
+  Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody', 'getRequestPostData', 'emulateNetworkConditions'],
   Overlay: ['enable', 'highlightNode', 'hideHighlight', 'setInspectMode'],
   Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent', 'getNavigationHistory', 'reload', 'navigate'],
   Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames', 'discardConsoleEntries'],
