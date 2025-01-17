@@ -14,6 +14,14 @@ const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
 
 export default class Network extends BaseDomain {
   namespace = 'Network';
+  networkConditions = {
+    offline: false,
+    latency: 0,
+    downloadThroughput: 0,
+    uploadThroughput: 0,
+    // none, cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other
+    connectionType: null
+  }
 
   // the unique id of the request
   requestId = 0;
@@ -141,6 +149,14 @@ export default class Network extends BaseDomain {
     return this.requestId;
   }
 
+  emulateNetworkConditions ({ offline, latency, downloadThroughput, uploadThroughput, connectionType }) {
+    Object.assign(
+      this.networkConditions,
+      // Limiting speed is difficult, and latency alone is easier to achieve
+      { offline, latency: latency << 2 }
+    )
+  }
+
   /**
    * Intercept XMLHttpRequest request
    * @private
@@ -163,7 +179,9 @@ export default class Network extends BaseDomain {
     };
 
     XMLHttpRequest.prototype.send = function (data) {
-      xhrSend.call(this, data);
+      window.setTimeout(() => {
+        xhrSend.call(this, data);
+      }, instance.networkConditions.latency || 0)
 
       const request = this.$$request;
       const { requestId, url, method } = request;
@@ -280,7 +298,12 @@ export default class Network extends BaseDomain {
       });
 
       let oriResponse;
-      return originFetch(request, initConfig).then((response) => {
+      return new Promise(function (r) {
+        window.setTimeout(
+          () => r(originFetch(request, initConfig)),
+          instance.networkConditions.latency || 0
+        )
+      }).then(r => r).then((response) => {
         // Temporarily save the raw response to the request
         oriResponse = response;
 
@@ -341,13 +364,11 @@ export default class Network extends BaseDomain {
         const requestId = this.getRequestId();
 
         try {
-          
           const { base64 } = url.startsWith('data:image') ? { base64: url } : (
             await originFetch(
               `${DEBUG_HOST}${DEBUG_PREFIX}/image_base64?url=${encodeURIComponent(url)}`
             )
-          )
-            .then(res => res.json());
+          ).then(res => res.json());
 
           this.responseData.set(requestId, {
             data: base64,

@@ -2,7 +2,7 @@
   <div class="tips">
     {{ $t('useTitle') }}
     <div class="code">
-      &lt;script src=&quot;https://path/to/cdp.js&quot;&gt;&lt;/script&gt;
+      &lt;script src=&quot;{{ DEBUG_HOST }}{{ DEBUG_PREFIX }}/dist/cdp.js&quot;&gt;&lt;/script&gt;
     </div>
     <div class="notice">
       <div class="title">{{ $t('notice') }}</div>
@@ -15,6 +15,19 @@
     </div>
   </div>
 </template>
+
+<script>
+const DEBUG_HOST = process.env.DEBUG_HOST;
+const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
+export default {
+  data () {
+    return {
+      DEBUG_HOST,
+      DEBUG_PREFIX
+    }
+  }
+}
+</script>
 
 <style>
   .tips {
