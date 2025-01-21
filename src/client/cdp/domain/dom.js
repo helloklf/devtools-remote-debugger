@@ -4,6 +4,7 @@ import { DEVTOOL_OVERLAY, IGNORE_NODE } from '../common/constant';
 import BaseDomain from './domain';
 import { Event } from './protocol';
 import Overlay from './overlay';
+import Page from './page';
 
 export default class Dom extends BaseDomain {
   namespace = 'DOM';
@@ -236,7 +237,7 @@ export default class Dom extends BaseDomain {
       this.expandNode(hoverNode);
       const nodeId = nodes.getIdByNode(hoverNode);
       return {
-        frameId: 1,
+        frameId: Page.MAINFRAME_ID,
         backendNodeId: nodeId,
         nodeId,
       };
