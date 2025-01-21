@@ -45,6 +45,7 @@ export default class Page extends BaseDomain {
   observerInst = null;
   frame = new Map();
   sent = false;
+  static MAINFRAME_ID = 1;
 
   /**
 
@@ -183,3 +184,6 @@ export default class Page extends BaseDomain {
     }
   }
 };
+
+Page.MAINFRAME_ID = Number(sessionStorage.getItem('debug_frame_id') || '0') + 1;
+sessionStorage.setItem('debug_frame_id', Page.MAINFRAME_ID);
