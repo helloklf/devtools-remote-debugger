@@ -1,6 +1,6 @@
 import jsCookie from 'js-cookie';
 import mime from 'mime/lite';
-import { getAbsolutePath, key2UpperCase } from '../common/utils';
+import { getAbsolutePath, getResponseLength, key2UpperCase } from '../common/utils';
 import BaseDomain from './domain';
 import { Event } from './protocol';
 import Runtime, { cdpJsName } from './runtime';
@@ -220,10 +220,7 @@ export default class Network extends BaseDomain {
 
             const responseHeaders = Network.formatResponseHeader(headers);
             const responseType = this.responseType || (this.getResponseHeader('Content-Type') || '').split(';')[0];
-            let contentLength = Number(this.getResponseHeader('Content-Length'));
-            if (!contentLength) {
-              contentLength = (this.responseText && this.responseText.length) || 0;
-            }
+            const responseLength = getResponseLength(this);
             instance.sendNetworkEvent({
               requestId,
               url: getAbsolutePath(url),
@@ -234,7 +231,7 @@ export default class Network extends BaseDomain {
               mimeType: responseType,
               status: this.status,
               statusText: this.statusText,
-              encodedDataLength: contentLength,
+              encodedDataLength: responseLength,
             });
           }
         });
@@ -361,26 +358,16 @@ export default class Network extends BaseDomain {
   }
 
   reloadImage2(src, resovle, reject) {
-    var xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.__cdp = true;
     xhr.onload = function () {
-      var reader = new FileReader();
+      const length = getResponseLength(xhr);
+      const reader = new FileReader();
       reader.onloadend = function () {
-        var base64data = reader.result;
-        var image = new Image();
-        image.onerror = function (e) {
-          reject(e)
-        }
-        image.onload = function () {
-          const canvas = document.createElement('canvas');
-          canvas.width = image.width;
-          canvas.height = image.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(image, 0, 0, image.width, image.height);
-          resovle(canvas.toDataURL('image/png'));
-        };
-        image.src = base64data;
+        var base64 = reader.result;
+        resovle({ base64, length });
       };
+      reader.onerror = reject;
       reader.readAsDataURL(this.response);
     };
     xhr.open('GET', src, true);
@@ -392,6 +379,7 @@ export default class Network extends BaseDomain {
     const xhr = new XMLHttpRequest();
     xhr.__cdp = true;
     xhr.onload = function () {
+      const length = getResponseLength(xhr);
       const url = URL.createObjectURL(this.response);
       const image = new Image();
       image.onload = function () {
@@ -400,10 +388,11 @@ export default class Network extends BaseDomain {
         canvas.height = image.height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0, image.width, image.height);
-        const dataURL = canvas.toDataURL('image/png');
-        resovle(dataURL);
+        const base64 = canvas.toDataURL('image/png');
+        resovle({ base64, length });
         URL.revokeObjectURL(url);
       };
+      image.onerror = reject;
       image.src = url;
     };
     xhr.open('GET', src, true);

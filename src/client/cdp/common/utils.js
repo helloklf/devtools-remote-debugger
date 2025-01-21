@@ -52,3 +52,18 @@ export function loadScript(url) {
 export function escapeRegString(string) {
   return string.replace(/[\\$*+?.^|(){}[\]]/g, '\\$&');
 }
+
+export function getResponseLength (xhr) {
+  let len = Number(xhr.getResponseHeader('Content-Length'));
+  if (!len) {
+    if (xhr.responseType === 'text') {
+      len = xhr.responseText.length;
+    } else if (xhr.responseType === 'arraybuffer') {
+      len = xhr.response.byteLength;
+    } else if (xhr.responseType === 'blob') {
+      len = xhr.response.size;
+    }
+  }
+
+  return len;
+}
