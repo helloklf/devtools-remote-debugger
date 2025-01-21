@@ -75,6 +75,7 @@ export default class Debugger extends BaseDomain {
         endColumn: 999999,
         endLine: 999999,
         scriptLanguage: 'JavaScript',
+        length: (this.getScriptSourceById(scriptId) || '').length,
       }
     });
   }

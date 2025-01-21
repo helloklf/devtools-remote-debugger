@@ -122,31 +122,35 @@ export default class Runtime extends BaseDomain {
    * @param {Error} error
    */
   static getCallFrames(error) {
-    let callFrames = [];
-    if (error) {
-      callFrames = ErrorStackParser.parse(error).map(frame => ({
-        ...frame,
-        url: frame.fileName,
-      }));
-      // Safari does not support captureStackTrace
-    } else if (Error.captureStackTrace) {
-      callFrames = callsite().map(val => {
-        const frame = {
-          functionName: val.getFunctionName(),
-          lineNumber: val.getLineNumber(),
-          columnNumber: val.getColumnNumber(),
-          url: val.getFileName(),
-        };
-        return frame;
-      });
-    } else {
-      callFrames = ErrorStackParser.parse(new Error()).map(frame => ({
-        ...frame,
-        url: frame.fileName,
-      }));
-    }
+    try {
+      let callFrames = [];
+      if (error) {
+        callFrames = ErrorStackParser.parse(error).map(frame => ({
+          ...frame,
+          url: frame.fileName,
+        }));
+        // Safari does not support captureStackTrace
+      } else if (Error.captureStackTrace) {
+        callFrames = callsite().map(val => {
+          const frame = {
+            functionName: val.getFunctionName(),
+            lineNumber: val.getLineNumber(),
+            columnNumber: val.getColumnNumber(),
+            url: val.getFileName(),
+          };
+          return frame;
+        });
+      } else {
+        callFrames = ErrorStackParser.parse(new Error()).map(frame => ({
+          ...frame,
+          url: frame.fileName,
+        }));
+      }
 
-    return callFrames.filter(it => it.functionName !== 'Runtime.getCallFrames');
+      return callFrames.filter(it => it.functionName !== 'Runtime.getCallFrames');
+    } catch {
+      return []
+    }
   }
 
   globalLexicalScopeNames () {
@@ -258,6 +262,7 @@ export default class Runtime extends BaseDomain {
       const nativeConsoleFunc = window.console[key];
       window.console[key] = (...args) => {
         nativeConsoleFunc?.(...args);
+        const frames = ['error', 'warn', 'trace', 'assert'].includes(key) ? Runtime.getCallFrames().slice(1) : [];
         const data = {
           method: Event.consoleAPICalled,
           params: {
@@ -267,7 +272,7 @@ export default class Runtime extends BaseDomain {
             timestamp: Date.now(),
             stackTrace: {
               // processing call stack
-              callFrames: ['error', 'warn', 'trace', 'assert'].includes(key) ? Runtime.getCallFrames().slice(1) : [],
+              callFrames: frames,
             }
           }
         };

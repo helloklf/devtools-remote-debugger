@@ -9,9 +9,6 @@ const getTimestamp = () => Date.now() / 1000;
 
 const originFetch = window.fetch;
 
-const DEBUG_HOST = process.env.DEBUG_HOST;
-const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
-
 export default class Network extends BaseDomain {
   namespace = 'Network';
   networkConditions = {
@@ -68,6 +65,7 @@ export default class Network extends BaseDomain {
   static getDefaultHeaders() {
     const headers = {
       'User-Agent': navigator.userAgent,
+      Origin: window.location.origin,
     };
     if (document.cookie) {
       headers.Cookie = document.cookie;
@@ -217,8 +215,15 @@ export default class Network extends BaseDomain {
         this.addEventListener('readystatechange', () => {
           // After the request is completed, get the http response header
           if (this.readyState === 4) {
+            // 未由 Access-Control-Expose-Headers 指定的请求头，可能读取不到
             const headers = this.getAllResponseHeaders();
+
             const responseHeaders = Network.formatResponseHeader(headers);
+            const responseType = this.responseType || (this.getResponseHeader('Content-Type') || '').split(';')[0];
+            let contentLength = Number(this.getResponseHeader('Content-Length'));
+            if (!contentLength) {
+              contentLength = (this.responseText && this.responseText.length) || 0;
+            }
             instance.sendNetworkEvent({
               requestId,
               url: getAbsolutePath(url),
@@ -226,10 +231,10 @@ export default class Network extends BaseDomain {
               blockedCookies: [],
               headersText: headers,
               type: this.$$requestType || 'XHR',
-              mimeType: this.responseType || ((this.getResponseHeader('Content-Type') || '').split(';')[0]),
+              mimeType: responseType,
               status: this.status,
               statusText: this.statusText,
-              encodedDataLength: Number(this.getResponseHeader('Content-Length')),
+              encodedDataLength: contentLength,
             });
           }
         });
@@ -317,6 +322,12 @@ export default class Network extends BaseDomain {
         });
 
         const contentType = headers.get('Content-Type') || "";
+        let responseLength = Number(headers.get('Content-Length'));
+        let responseText = '';
+        if (['application/json', 'application/javascript', 'text/plain', 'text/html', 'text/css'].some(type => contentType.includes(type))) {
+          responseText = response.clone().text();
+        }
+        responseLength = responseLength || responseText.length;
         instance.sendNetworkEvent({
           url,
           requestId,
@@ -327,13 +338,10 @@ export default class Network extends BaseDomain {
           mimeType: (contentType || '').split(';')[0],
           blockedCookies: [],
           headers: responseHeaders,
-          encodedDataLength: Number(headers.get('Content-Length')),
+          encodedDataLength: responseLength,
         });
 
-        if (['application/json', 'application/javascript', 'text/plain', 'text/html', 'text/css'].some(type => contentType.includes(type))) {
-          return response.clone().text();
-        }
-        return '';
+        return responseText;
       })
         .then((responseBody) => {
           instance.responseData.set(requestId, responseBody);
@@ -352,6 +360,81 @@ export default class Network extends BaseDomain {
     };
   }
 
+  reloadImage2(src, resovle, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.__cdp = true;
+    xhr.onload = function () {
+      var reader = new FileReader();
+      reader.onloadend = function () {
+        var base64data = reader.result;
+        var image = new Image();
+        image.onerror = function (e) {
+          reject(e)
+        }
+        image.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, image.width, image.height);
+          resovle(canvas.toDataURL('image/png'));
+        };
+        image.src = base64data;
+      };
+      reader.readAsDataURL(this.response);
+    };
+    xhr.open('GET', src, true);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
+
+  reloadImage(src, resovle, reject) {
+    const xhr = new XMLHttpRequest();
+    xhr.__cdp = true;
+    xhr.onload = function () {
+      const url = URL.createObjectURL(this.response);
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, image.width, image.height);
+        const dataURL = canvas.toDataURL('image/png');
+        resovle(dataURL);
+        URL.revokeObjectURL(url);
+      };
+      image.src = url;
+    };
+    xhr.open('GET', src, true);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
+
+  getImageBase64(image) {
+    return new Promise((resovle, reject) => {
+      const onLoad = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        try {
+          ctx.drawImage(image, 0, 0, image.width, image.height);
+          const dataURL = canvas.toDataURL('image/png');
+          resovle(dataURL)
+        } catch {
+          this.reloadImage(image.src, resovle, reject)
+        }
+      }
+      if (image.complete) {
+        onLoad();
+      } else {
+        image.addEventListener('load', onLoad);
+        image.addEventListener('error', reject);
+      }
+    });
+  }
+
   /**
    * @private
    * report image request for Network panel
@@ -359,22 +442,20 @@ export default class Network extends BaseDomain {
   reportImageNetwork() {
     const imgUrls = new Set();
 
-    const reportNetwork = (urls) => {
-      urls.forEach(async (url) => {
+    const reportNetwork = (images) => {
+      images.forEach(async (image) => {
+        const url = image.src
         const requestId = this.getRequestId();
 
         try {
-          const { base64 } = url.startsWith('data:image') ? { base64: url } : (
-            await originFetch(
-              `${DEBUG_HOST}${DEBUG_PREFIX}/image_base64?url=${encodeURIComponent(url)}`
-            )
-          ).then(res => res.json());
+          const base64 = url.startsWith('data:image') ? url : await this.getImageBase64(image);
 
           this.responseData.set(requestId, {
-            data: base64,
+            data: base64.split(',')[1],
             base64Encoded: true,
           });
-        } catch {
+        } catch (e) {
+          console.log('cdp image', image, e.message)
           // nothing to do
         }
 
@@ -397,29 +478,30 @@ export default class Network extends BaseDomain {
           statusText: '',
           headersText: '',
           type: 'Image',
+          mimeType: 'image/png',
           blockedCookies: [],
           encodedDataLength: 0,
         });
       });
     };
 
-    const getImageUrls = () => {
-      const urls = [];
+    const getNewImages = () => {
+      const images = [];
       Object.values(document.images).forEach(image => {
         const url = image.getAttribute('src');
         if (!imgUrls.has(url)) {
           imgUrls.add(url);
-          urls.push(url);
+          images.push(image);
         }
       });
-      return urls;
+      return images;
     };
 
     const observerBodyMutation = () => {
       const observer = new MutationObserver(() => {
-        const urls = getImageUrls();
-        if (urls.length) {
-          reportNetwork(urls);
+        const images = getNewImages();
+        if (images.length) {
+          reportNetwork(images);
         }
       });
 
@@ -429,7 +511,7 @@ export default class Network extends BaseDomain {
       });
     };
 
-    reportNetwork(getImageUrls());
+    reportNetwork(getNewImages());
     observerBodyMutation();
   }
 
