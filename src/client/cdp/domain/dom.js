@@ -256,6 +256,9 @@ export default class Dom extends BaseDomain {
    */
   getBoxModel({ nodeId }) {
     const node = nodes.getNodeById(nodeId);
+    if (!node instanceof Element) {
+      return
+    }
     const styles = window.getComputedStyle(node);
     const margin = Overlay.getStylePropertyValue(['margin-top', 'margin-right', 'margin-bottom', 'margin-left'], styles);
     const padding = Overlay.getStylePropertyValue(['padding-top', 'padding-right', 'padding-bottom', 'padding-left'], styles);
@@ -311,6 +314,19 @@ export default class Dom extends BaseDomain {
     nodeIds.forEach((nodeId) => {
       this.requestChildNodes({ nodeId });
     });
+  }
+
+  moveTo ({ nodeId, insertBeforeNodeId, targetNodeId }) {
+    const node = nodes.getNodeById(nodeId);
+    const targetParent = nodes.getNodeById(targetNodeId);
+    const before = nodes.getNodeById(insertBeforeNodeId);
+    node?.parentNode?.removeChild(node);
+    if (before) {
+      targetParent?.insertBefore(node, before);
+    } else {
+      targetParent?.appendChild(node);
+    }
+    console.log('moveTo', node, targetParent, before);
   }
 
   /**
