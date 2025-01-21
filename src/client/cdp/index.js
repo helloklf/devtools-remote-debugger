@@ -103,5 +103,34 @@ function keepScreenDisplay() {
   });
 }
 
-initSocket();
-keepScreenDisplay();
+window.cdp = function (secret) {
+  const node = document.createElement('div');
+  const msg = `请在电脑上访问 ${DEBUG_PREFIX} 查看日志`;
+  node.innerHTML = `<div style="background: #39a734;
+color: #fff;
+padding: 0.4em 0.5em;
+position: fixed;
+left: 0;
+top: 0;
+font-size: 0.8em;
+border-radius: 0.4em;
+margin: 0.2em;" onclick="alert('${msg}')">
+  <div>Console</div>
+  <div style="font-size: 0.7em;">${getId()}</div>
+</div>`;
+  try {
+    const addEle = () => {
+      document.body.appendChild(node);
+    };
+    if (document.body) {
+      addEle();
+    } else {
+      window.addEventListener('load', addEle);
+    }
+  } catch(e) {
+    console.info('[Error] cdp', e.message);
+  }
+  initSocket();
+  keepScreenDisplay();
+}
+
