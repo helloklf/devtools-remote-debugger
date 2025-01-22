@@ -78,13 +78,13 @@ export default class ChromeDomain {
         }
       }
 
-      if (tag === 'script') {
-        const url = node.getAttribute('src');
-        if (url) {
-          setTimeout(() => {
-            this.protocol['Debugger.getDynamicScript'](url);
-          }, 300);
-        }
+      if (tag === 'script' && node.getAttribute('src')) {
+        node.addEventListener('load', () => {
+          console.log('1231232', node.getAttribute('src'))
+        })
+        setTimeout(() => {
+          this.protocol['Debugger.getDynamicScript'](node);
+        }, 300);
       }
     };
 

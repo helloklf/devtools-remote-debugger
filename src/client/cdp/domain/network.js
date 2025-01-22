@@ -375,30 +375,33 @@ export default class Network extends BaseDomain {
     xhr.send();
   }
 
-  reloadImage(src, resovle, reject) {
-    const xhr = new XMLHttpRequest();
-    xhr.__cdp = true;
-    xhr.onload = function () {
-      const length = getResponseLength(xhr);
-      const url = URL.createObjectURL(this.response);
-      const image = new Image();
-      image.onload = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(image, 0, 0, image.width, image.height);
-        const base64 = canvas.toDataURL('image/png');
-        resovle({ base64, length });
-        URL.revokeObjectURL(url);
+  /*
+    // Compatible with Internet Explorer
+    reloadImage(src, resovle, reject) {
+      const xhr = new XMLHttpRequest();
+      xhr.__cdp = true;
+      xhr.onload = function () {
+        const length = getResponseLength(xhr);
+        const url = URL.createObjectURL(this.response);
+        const image = new Image();
+        image.onload = function () {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, image.width, image.height);
+          const base64 = canvas.toDataURL('image/png');
+          resovle({ base64, length });
+          URL.revokeObjectURL(url);
+        };
+        image.onerror = reject;
+        image.src = url;
       };
-      image.onerror = reject;
-      image.src = url;
-    };
-    xhr.open('GET', src, true);
-    xhr.responseType = 'blob';
-    xhr.send();
-  }
+      xhr.open('GET', src, true);
+      xhr.responseType = 'blob';
+      xhr.send();
+    }
+  */
 
   getImageBase64(image) {
     return new Promise((resovle, reject) => {
@@ -412,7 +415,7 @@ export default class Network extends BaseDomain {
           const dataURL = canvas.toDataURL('image/png');
           resovle(dataURL)
         } catch {
-          this.reloadImage(image.src, resovle, reject)
+          this.reloadImage2(image.src, resovle, reject)
         }
       }
       if (image.complete) {
