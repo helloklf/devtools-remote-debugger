@@ -1,8 +1,16 @@
 // Implemented CDP
 export default {
-  CSS: ['enable', 'getStyleSheetText', 'getMatchedStylesForNode', 'getComputedStyleForNode',
-    'getInlineStylesForNode', 'getDynamicLink', 'addRule', 'createStyleSheet', 'setStyleTexts',],
-  Debugger: ['enable', 'getScriptSource', 'setScriptSource'],
+  CSS: [
+    'enable', 'getStyleSheetText', 'getMatchedStylesForNode', 'getComputedStyleForNode',
+    'getInlineStylesForNode', 'addRule', 'createStyleSheet', 'setStyleTexts',  
+    /* Note: Non-protocol api, for easy access to index.js by the bind object only */
+    'getDynamicLink',
+  ],
+  Debugger: [
+    'enable', 'getScriptSource', 'setScriptSource',
+    /* Note: Non-protocol api, for easy access to index.js by the bind object only */
+    'getDynamicScript'
+  ],
   DOMStorage: ['enable', 'getDOMStorageItems', 'removeDOMStorageItem', 'clear', 'setDOMStorageItem'],
   Storage: ['getStorageKeyForFrame'],
   CacheStorage: ['requestCacheNames', 'requestEntries', 'requestCachedResponse', 'deleteCache', 'deleteEntry'],

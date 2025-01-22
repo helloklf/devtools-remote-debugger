@@ -72,19 +72,16 @@ export default class ChromeDomain {
         const url = node.getAttribute('href');
         const rel = node.getAttribute('rel');
         if (url && (!rel || rel === 'stylesheet')) {
-          setTimeout(() => {
+          node.addEventListener('load', () => {
             this.protocol['CSS.getDynamicLink'](url);
-          }, 300);
+          })
         }
       }
 
       if (tag === 'script' && node.getAttribute('src')) {
         node.addEventListener('load', () => {
-          console.log('1231232', node.getAttribute('src'))
-        })
-        setTimeout(() => {
           this.protocol['Debugger.getDynamicScript'](node);
-        }, 300);
+        })
       }
     };
 
