@@ -56,7 +56,7 @@ export function escapeRegString(string) {
 export function getResponseLength (xhr) {
   let len = Number(xhr.getResponseHeader('Content-Length'));
   if (!len) {
-    if (xhr.responseType === 'text') {
+    if (xhr.responseType === '' || xhr.responseType === 'text') {
       len = xhr.responseText.length;
     } else if (xhr.responseType === 'arraybuffer') {
       len = xhr.response.byteLength;

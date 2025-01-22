@@ -14,22 +14,9 @@ export default class Debugger extends BaseDomain {
   /**
    * @public
    */
-  enable() {
-    const scripts = this.collectScripts();
-    scripts.forEach(({ scriptId, url }) => {
-      this.send({
-        method: Event.scriptParsed,
-        params: {
-          scriptId,
-          startColumn: 0,
-          startLine: 0,
-          endColumn: 999999,
-          endLine: 999999,
-          scriptLanguage: 'JavaScript',
-          url,
-        }
-      });
-    });
+  async enable() {
+    const scripts = await this.collectScripts();
+    scripts.forEach(it => this.sendScriptParsed(it));
   }
 
   /**
@@ -57,14 +44,7 @@ export default class Debugger extends BaseDomain {
     }
   }
 
-  /**
-   * fetch the source content of the dynamic script file
-   * @public
-   * @param {string} url script file url address
-   */
-  getDynamicScript(url) {
-    const scriptId = this.getScriptId();
-    this.fetchScriptSource(scriptId, getAbsolutePath(url));
+  sendScriptParsed({ scriptId, url, content }) {
     this.send({
       method: Event.scriptParsed,
       params: {
@@ -75,19 +55,31 @@ export default class Debugger extends BaseDomain {
         endColumn: 999999,
         endLine: 999999,
         scriptLanguage: 'JavaScript',
-        length: (this.getScriptSourceById(scriptId) || '').length,
+        length: (content || '').length,
       }
     });
+  }
+
+  /**
+   * fetch the source content of the dynamic script file
+   * @public
+   * @param {string} url script file url address
+   */
+  async getDynamicScript(script) {
+    const url = script.src || script.getAttribute('src');
+    const scriptId = this.getScriptId();
+    const content = await this.fetchScriptSource(scriptId, getAbsolutePath(url));
+    this.sendScriptParsed({ scriptId, url, content, isModule: script.isModule });
   }
 
   /**
    * Collect all scripts of the page
    * @private
    */
-  collectScripts() {
-    const scriptElements = document.querySelectorAll('script');
+  async collectScripts() {
+    const scriptElements = document.scripts;
     const ret = [];
-    scriptElements.forEach((script) => {
+    for (let script of scriptElements) {
       // Avoid getting script source code repeatedly when socket reconnects
       if (script.scriptId) {
         return;
@@ -97,10 +89,11 @@ export default class Debugger extends BaseDomain {
       const src = script.getAttribute('src');
       if (src) {
         const url = getAbsolutePath(src);
-        ret.push({ scriptId, url });
-        this.fetchScriptSource(scriptId, url);
+        const scriptInfo = { scriptId, url, isModule: script.isModule };
+        ret.push(scriptInfo);
+        scriptInfo.content = await this.fetchScriptSource(scriptId, url);
       }
-    });
+    }
     return ret;
   }
 
@@ -111,24 +104,22 @@ export default class Debugger extends BaseDomain {
    * @param {String} url javascript file url
    */
   fetchScriptSource(scriptId, url) {
-    const xhr = new XMLHttpRequest();
-    xhr.$$requestType = 'Script';
-    xhr.__initiator = null;
-    xhr.onload = () => {
-      this.scripts.set(scriptId, {
-        url,
-        content: xhr.responseText
-      });
-    };
-    xhr.onerror = () => {
-      this.scripts.set(scriptId, {
-        url,
-        content: 'Cannot get script source code'
-      });
-    };
-
-    xhr.open('GET', url);
-    xhr.send();
+    return new Promise((resovle) => {
+      const xhr = new XMLHttpRequest();
+      xhr.$$requestType = 'Script';
+      xhr.__initiator = null;
+      const onCompleted = (content) => {
+        this.scripts.set(scriptId, {
+          url,
+          content: content
+        });
+        resovle(content);
+      }
+      xhr.onload = () => onCompleted(xhr.responseText);
+      xhr.onerror = () => onCompleted('Cannot get script source code');
+      xhr.open('GET', url);
+      xhr.send();
+    })
   }
 
   /**
@@ -138,7 +129,8 @@ export default class Debugger extends BaseDomain {
    * @param {Number} param.scriptId javascript script unique id
    */
   getScriptSourceById(scriptId) {
-    return this.scripts.get(scriptId).content;
+    const script = this.scripts.get(scriptId)
+    return script ? script.content : '';
   }
 
   /**
