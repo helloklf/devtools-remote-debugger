@@ -344,3 +344,7 @@ input[is=history-input]:not(:placeholder-shown) {
 .toolbar-item.warning {
     background: hsl(0, 100%, 95%);
 }
+
+.toolbar-button[aria-label="Console settings"] {
+    display: none;
+}

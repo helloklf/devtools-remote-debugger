@@ -282,3 +282,8 @@
     margin-left: -4px;
     flex: none;
 }
+
+#tab-timeline, #tab-heap_profiler, .tabbed-pane-right-toolbar,
+#tab-navigator-overrides, #tab-navigator-contentScripts, #tab-navigator-snippets, #tab-navigator-files {
+    display: none;
+}

@@ -36,8 +36,8 @@ Network.NetworkPanel = class extends UI.Panel {
     super('network');
     this.registerRequiredCSS('network/networkPanel.css');
 
-    this._networkLogShowOverviewSetting = Common.settings.createSetting('networkLogShowOverview', true);
-    this._networkLogLargeRowsSetting = Common.settings.createSetting('networkLogLargeRows', false);
+    this._networkLogShowOverviewSetting = Common.settings.createSetting('networkLogShowOverview', false);
+    this._networkLogLargeRowsSetting = Common.settings.createSetting('networkLogLargeRows', true);
     this._networkRecordFilmStripSetting = Common.settings.createSetting('networkRecordFilmStripSetting', false);
     this._toggleRecordAction = /** @type {!UI.Action }*/ (UI.actionRegistry.action('network.toggle-recording'));
 

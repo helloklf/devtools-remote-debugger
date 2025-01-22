@@ -57,16 +57,11 @@ export default class Runtime extends BaseDomain {
           }
           const textArea = document.createElement('textarea');
           textArea.value = text;
-          textArea.style.position = 'fixed';
-          textArea.style.top = 0;
-          textArea.style.left = 0;
-          textArea.style.width = '1px';
-          textArea.style.height = '1px';
-          textArea.style.padding = 0;
-          textArea.style.border = 'none';
-          textArea.style.outline = 'none';
-          textArea.style.boxShadow = 'none';
-          textArea.style.background = 'transparent';
+          const style = textArea.style;
+          style.position = 'fixed';
+          style.width = '1px';
+          style.height = '1px';
+          style.opacity = 0;
           document.body.appendChild(textArea);
           textArea.focus();
           textArea.select();
@@ -187,12 +182,12 @@ export default class Runtime extends BaseDomain {
    * @param {String} param.expression expression string
    * @param {Boolean} param.generatePreview whether to generate a preview
    */
-  evaluate({ expression, generatePreview }) {
+  async evaluate({ expression, generatePreview, awaitPromise }) {
     try {
       // Modifying the scope to the global scope enables variables defined
       // with var to be accessible globally.
       // eslint-disable-next-line
-      const res = window.eval(expression);
+      const res = awaitPromise ? await window.eval(expression) : window.eval(expression);
       // chrome-api
       window.$_ = res;
       return {

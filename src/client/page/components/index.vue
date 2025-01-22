@@ -5,13 +5,16 @@
         <template #default="{ row }">
           <img class="favicon" v-if="row.favicon" :src="row.favicon" />
           <span v-else>-</span>
+          <div>
+            <small>{{ row.id }}</small>
+          </div>
         </template>
       </el-table-column>
       <el-table-column prop="title" :label="$t('title')" :width="140" />
       <el-table-column prop="pageUrl" :label="$t('pageUrl')">
         <template #default="{ row }">
           <small>{{ row.pageUrl }}</small>
-          <a :href="row.pageUrl" target="_blank">🌍</a>
+          <a style="margin-left: 1em" :href="row.pageUrl" target="_blank">🌍</a>
         </template>
       </el-table-column>
       <el-table-column prop="ua" label="UserAgent">
@@ -76,7 +79,7 @@ export default {
       const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
       const domain = DEBUG_HOST.replace(/^(http|https):\/\//ig, '');
       const wsUrl = encodeURIComponent(`${domain}${DEBUG_PREFIX}/devtools/${uuid()}?clientId=${id}`);
-      const url = `${location.protocol}//${domain}${DEBUG_PREFIX}/front_end/devtools_app.html?${protocol}=${wsUrl}`;
+      const url = `${location.protocol}//${domain}${DEBUG_PREFIX}/front_end/inspector.html?${protocol}=${wsUrl}`;
       window.open(url);
     },
     getData() {
@@ -126,6 +129,6 @@ export default {
 }
 
 .favicon {
-  width: 36px;
+  width: 30px;
 }
 </style>

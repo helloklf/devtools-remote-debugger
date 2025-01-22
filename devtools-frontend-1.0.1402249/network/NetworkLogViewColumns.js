@@ -113,7 +113,7 @@ Network.NetworkLogViewColumns = class {
     this._dataGrid.markColumnAsSortedBy(
         Network.NetworkLogViewColumns._initialSortColumn, DataGrid.DataGrid.Order.Ascending);
 
-    this._splitWidget = new UI.SplitWidget(true, true, 'networkPanelSplitViewWaterfall', 200);
+    this._splitWidget = new UI.SplitWidget(true, true, 'networkPanelSplitViewWaterfall', 0);
     const widget = this._dataGrid.asWidget();
     widget.setMinimumSize(150, 0);
     this._splitWidget.setMainWidget(widget);
@@ -139,7 +139,7 @@ Network.NetworkLogViewColumns = class {
     this._createWaterfallHeader();
     this._waterfallColumn.contentElement.classList.add('network-waterfall-view');
 
-    this._waterfallColumn.setMinimumSize(100, 0);
+    this._waterfallColumn.setMinimumSize(0, 0);
     this._splitWidget.setSidebarWidget(this._waterfallColumn);
 
     this.switchViewMode(false);
