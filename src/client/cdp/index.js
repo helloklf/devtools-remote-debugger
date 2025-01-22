@@ -112,7 +112,7 @@ padding: 0.4em 0.5em;
 position: fixed;
 left: 0;
 top: 0;
-font-size: 0.8em;
+transform: scale(0.8);
 border-radius: 0.4em;
 margin: 0.2em;" onclick="alert('${msg}')">
   <div>Console</div>
@@ -133,4 +133,3 @@ margin: 0.2em;" onclick="alert('${msg}')">
   initSocket();
   keepScreenDisplay();
 }
-
