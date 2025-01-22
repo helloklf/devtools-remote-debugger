@@ -9,7 +9,6 @@ import Page from './page';
 import Network from './network';
 import Css from './css';
 import SourceDebugger from './debugger';
-import ScreenPreview from './screen-preview';
 import Input from './input';
 import protocol from './protocol';
 
@@ -19,7 +18,7 @@ export default class ChromeDomain {
   constructor(options) {
     this.registerProtocol(options);
     this.proxyAppendChild();
-    this.proxyEventListener();
+    this.proxyEventListeners();
   }
 
   /**
@@ -51,7 +50,6 @@ export default class ChromeDomain {
       new Network(options),
       new Css(options),
       new SourceDebugger(options),
-      new ScreenPreview(options),
       new Input(options),
     ];
 
@@ -102,18 +100,15 @@ export default class ChromeDomain {
     };
   }
 
-  /**
-   * inject getEventListeners
-   */
-  proxyEventListener() {
-    const originalAddEventListener = EventTarget.prototype.addEventListener;
-    const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
+  proxyEventListener (eventTarget) {
+    const originalAddEventListener = eventTarget.prototype.addEventListener;
+    const originalRemoveEventListener = eventTarget.prototype.removeEventListener;
     const eventListenersMap = DomDebugger.eventListenersMap;
 
     /**
      * @type { EventTarget['addEventListener'] }
      */
-    EventTarget.prototype.addEventListener = function(type, listener, optionOrUseCapture) {
+    eventTarget.prototype.addEventListener = function(type, listener, optionOrUseCapture) {
       let options;
       if (typeof optionOrUseCapture === 'object' && optionOrUseCapture !== null) {
         options = optionOrUseCapture;
@@ -155,7 +150,7 @@ export default class ChromeDomain {
     /**
      * @type { EventTarget['removeEventListener'] }
      */
-    EventTarget.prototype.removeEventListener = function(type, listener, optionOrUseCapture) {
+    eventTarget.prototype.removeEventListener = function(type, listener, optionOrUseCapture) {
       let options;
       if (typeof optionOrUseCapture === 'object' && optionOrUseCapture !== null) {
         options = optionOrUseCapture;
@@ -182,18 +177,40 @@ export default class ChromeDomain {
 
       return originalRemoveEventListener.apply(this, [type, listener, options]);
     };
+  }
 
+  /**
+   * inject getEventListeners
+   */
+  proxyEventListeners() {
+    this.proxyEventListener(EventTarget)
+    this.proxyEventListener(HTMLElement)
+
+    const eventListenersMap = DomDebugger.eventListenersMap;
+    window.eventListenersMap = eventListenersMap;
     window.getEventListeners = function(target) {
+      let listenersMap = {};
       if (eventListenersMap.has(target)) {
-        return Object.fromEntries(Object.entries(eventListenersMap.get(target)).map(([key, value]) => {
+        listenersMap = Object.fromEntries(Object.entries(eventListenersMap.get(target)).map(([key, value]) => {
           return [key, value.map(v => {
             const { capture, listener, once, passive, type } = v;
             return { capture, listener, once, passive, type };
           })];
         }));
-      } else {
-        return {};
       }
+      const events = Object.getOwnPropertyNames(
+        HTMLElement.prototype
+      ).filter(it => typeof it === 'string' && it.indexOf('on') === 0);
+      events.forEach(event => {
+        if (target[event]) {
+          const type = event.substring(2);
+          console.log(listenersMap[type]);
+          const listeners = listenersMap[type] || [];
+          listeners.push(target[event]);
+          listenersMap[type] = listeners;
+        }
+      });
+      return listenersMap;
     };
   }
 };

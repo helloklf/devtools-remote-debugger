@@ -18,7 +18,6 @@ export default {
   Overlay: ['enable', 'highlightNode', 'hideHighlight', 'setInspectMode'],
   Page: ['enable', 'startScreencast', 'stopScreencast', 'getResourceTree', 'getResourceContent', 'getNavigationHistory', 'reload', 'navigate'],
   Runtime: ['enable', 'evaluate', 'getProperties', 'releaseObject', 'callFunctionOn', 'globalLexicalScopeNames', 'discardConsoleEntries'],
-  ScreenPreview: ['startPreview', 'stopPreview'], // ScreenPreview is a custom protocol
   Input: ['emulateTouchFromMouseEvent', 'dispatchKeyEvent']
 };
 
@@ -55,8 +54,4 @@ export const Event = {
 
   nodeHighlightRequested: 'Overlay.nodeHighlightRequested',
   inspectNodeRequested: 'Overlay.inspectNodeRequested',
-
-  captured: 'ScreenPreview.captured',
-  syncScroll: 'ScreenPreview.syncScroll',
-  syncMouse: 'ScreenPreview.syncMouse',
 };
