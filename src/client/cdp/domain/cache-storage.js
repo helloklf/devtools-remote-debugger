@@ -38,7 +38,7 @@ export default class DomStorage extends BaseDomain {
     }));
     return {
       cacheDataEntries: data,
-      returnCount: data.length,
+      returnCount: items.length,
     }
   }
 

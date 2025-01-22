@@ -64,3 +64,8 @@
     background-color: var(--toolbar-bg-color);
     border-top: var(--divider-border);
 }
+
+
+[slot=insertion-point-sidebar] {
+    display: none;
+}

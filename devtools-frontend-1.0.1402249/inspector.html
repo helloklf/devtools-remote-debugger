@@ -11,6 +11,20 @@
     <meta name="referrer" content="no-referrer">
     <script src="Runtime.js"></script>
     <script src="inspector.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            var sw = window.navigator.serviceWorker;
+            if (sw) {
+                sw.register('./devtools_app_worker.js')
+            }
+        });
+    </script>
+    <style>
+        #tab-timeline, #tab-heap_profiler,
+        .tabbed-pane-right-toolbar {
+            display: none;
+        }
+    </style>
 </head>
 <body class="undocked" id="-blink-dev-tools"></body>
 </html>
