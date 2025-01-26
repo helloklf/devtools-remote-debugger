@@ -67,7 +67,7 @@ const getPreview = (val, others = {}) => {
       } else if (subtype === 'node') {
         subVal = `#${subVal.nodeName}`;
       } else {
-        subVal = subVal.constructor.name;
+        subVal = subVal && subVal.constructor.name;
       }
     } else {
       subVal = subVal === undefined ? 'undefined' : subVal.toString();
@@ -86,9 +86,20 @@ const getPreview = (val, others = {}) => {
   };
 };
 
+// Proxy: Vue Proxy object serialization has the risk of infinite loop, But there's no better way to tell if it's a Proxy
+function isProxy(obj) {
+  return obj && obj.__isVue
+}
+
 export function objectFormat(val, others = {}) {
   const { origin = val, preview = false } = others;
 
+  if (isProxy(val)) {
+    return {
+      type: 'string',
+      value: `Proxy({...})`
+    }
+  }
   const { type, subtype } = getType(val);
 
   if (type === 'undefined') return { type };

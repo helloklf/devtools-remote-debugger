@@ -40,7 +40,7 @@ export default class Debugger extends BaseDomain {
         contentType: ''
       })
     } else {
-      console.wran('Script source overrides need to be registered cdp_overrides.js (Worker Service)')
+      console.info('Script source overrides need to be registered cdp_overrides.js (Worker Service)')
     }
   }
 

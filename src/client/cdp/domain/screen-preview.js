@@ -24,7 +24,7 @@ export default class ScreenPreview {
         quality: 0.6,
         filter: (ele) => !ScreenPreview.elementExclude(ele)
       }).catch(e => {
-        console.error('Failed to capture screen with dom-to-image:', e);
+        console.info('Failed to capture screen with dom-to-image:', e);
         useDomToImage = false;
       });
     } else {
