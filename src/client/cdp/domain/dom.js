@@ -327,7 +327,6 @@ export default class Dom extends BaseDomain {
     } else {
       targetParent?.appendChild(node);
     }
-    console.log('moveTo', node, targetParent, before);
   }
 
   /**

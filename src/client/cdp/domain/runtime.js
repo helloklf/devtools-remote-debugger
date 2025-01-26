@@ -13,6 +13,7 @@ export const cdpJsName = (function() {
 
 export default class Runtime extends BaseDomain {
   namespace = 'Runtime';
+  static rawConsole = {};
 
   cacheConsole = [];
 
@@ -194,7 +195,6 @@ export default class Runtime extends BaseDomain {
         result: objectFormat(res, { preview: generatePreview }),
       };
     } catch (error) {
-      console.error('evaluate', error);
       return {
         exceptionDetails: {
           text: error.message,
@@ -255,6 +255,7 @@ export default class Runtime extends BaseDomain {
 
     Object.keys(methods).forEach((key) => {
       const nativeConsoleFunc = window.console[key];
+      Runtime.rawConsole[key] = nativeConsoleFunc;
       window.console[key] = (...args) => {
         nativeConsoleFunc?.(...args);
         const frames = ['error', 'warn', 'trace', 'assert'].includes(key) ? Runtime.getCallFrames().slice(1) : [];
@@ -334,7 +335,6 @@ export default class Runtime extends BaseDomain {
         }
       }
     } else {
-      console.error(error);
       return {
         result: objectFormat(result),
         exceptionDetails: error && {
