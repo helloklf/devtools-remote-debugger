@@ -19,7 +19,8 @@ export default {
     'setOuterHTML', 'setAttributesAsText', 'setInspectedNode', 'pushNodesByBackendIdsToFrontend',
     'performSearch', 'getSearchResults', 'discardSearchResults', 'getNodeForLocation', 'setNodeValue',
     'getBoxModel',
-    'moveTo'
+    'moveTo',
+    'resolveNode'
   ],
   DOMDebugger: ['getEventListeners'],
   Network: ['enable', 'getCookies', 'setCookie', 'deleteCookies', 'getResponseBody', 'getRequestPostData', 'emulateNetworkConditions'],
