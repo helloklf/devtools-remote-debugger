@@ -5,8 +5,8 @@ import ChromeDomain from './domain/index';
 import startWatch from './common/routerWatch';
 import { Event } from './domain/protocol';
 
-const DEBUG_HOST = process.env.DEBUG_HOST;
-const DEBUG_PREFIX = process.env.DEBUG_PREFIX;
+let DEBUG_HOST = process.env.DEBUG_HOST;
+let DEBUG_PREFIX = process.env.DEBUG_PREFIX;
 
 function getDocumentFavicon() {
   const links = document.head.querySelectorAll('link');
@@ -103,9 +103,14 @@ function keepScreenDisplay() {
   });
 }
 
-window.cdp = function (secret) {
+window.cdp = function (serverHost) {
+  if (serverHost) {
+    const { origin, pathname } = new URL(serverHost)
+    DEBUG_HOST = origin
+    DEBUG_PREFIX = pathname
+  };
+
   const node = document.createElement('div');
-  const msg = `请在电脑上访问 ${DEBUG_PREFIX} 查看日志`;
   node.innerHTML = `<div style="background: #39a734;
 color: #fff;
 padding: 0.4em 0.5em;
@@ -114,9 +119,9 @@ left: 0;
 top: 0;
 transform: scale(0.8);
 border-radius: 0.4em;
-margin: 0.2em;" onclick="alert('${msg}')">
-  <div>Console</div>
-  <div style="font-size: 0.7em;">${getId()}</div>
+margin: 0.2em;">
+  <div>Debugger</div>
+  <div style="font-size: 0.7em;">ID: ${getId()}</div>
 </div>`;
   try {
     const addEle = () => {
