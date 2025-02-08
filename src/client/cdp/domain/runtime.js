@@ -258,7 +258,7 @@ export default class Runtime extends BaseDomain {
       Runtime.rawConsole[key] = nativeConsoleFunc;
       window.console[key] = (...args) => {
         nativeConsoleFunc?.(...args);
-        const frames = ['error', 'warn', 'trace', 'assert'].includes(key) ? Runtime.getCallFrames().slice(1) : [];
+        const frames = Runtime.getCallFrames().slice(1);
         const data = {
           method: Event.consoleAPICalled,
           params: {
