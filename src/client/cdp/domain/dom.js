@@ -1,5 +1,5 @@
 import nodes from '../common/nodes';
-import { getObjectById } from '../common/remoteObject';
+import { getObjectById, objectFormat } from '../common/remoteObject';
 import { DEVTOOL_OVERLAY, IGNORE_NODE } from '../common/constant';
 import BaseDomain from './domain';
 import { Event } from './protocol';
@@ -156,6 +156,13 @@ export default class Dom extends BaseDomain {
   removeNode({ nodeId }) {
     const node = nodes.getNodeById(nodeId);
     node?.parentNode?.removeChild(node);
+  }
+
+  resolveNode({ nodeId, backendNodeId, objectGroup, executionContextId }) {
+    const node = nodes.getNodeById(nodeId);
+    return {
+      object: objectFormat(node)
+    }
   }
 
   /**
