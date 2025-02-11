@@ -2,6 +2,7 @@ import nodes from '../common/nodes';
 import BaseDomain from './domain';
 import { DEVTOOL_OVERLAY } from '../common/constant';
 import { Event } from './protocol';
+import { getObjectById } from '../common/remoteObject';
 
 export default class Overlay extends BaseDomain {
   namespace = 'Overlay';
@@ -54,11 +55,14 @@ export default class Overlay extends BaseDomain {
    * @public
    * @param {Object} param
    * @param {String} param.nodeId node unique id
+   * @param {String} param.objectId
    * @param {String} param.nodeElement
    * @param {Object} param.highlightConfig
    */
-  highlightNode({ nodeId, nodeElement, highlightConfig }) {
-    const node = nodeElement || nodes.getNodeById(nodeId);
+  highlightNode({ objectId, nodeId, nodeElement, highlightConfig }) {
+    const node = nodeElement || nodes.getNodeById(nodeId) || (
+      objectId && getObjectById(objectId)
+    );
     if (
       !node ||
       [Node.TEXT_NODE, Node.COMMENT_NODE, Node.DOCUMENT_TYPE_NODE].includes(node.nodeType) ||
