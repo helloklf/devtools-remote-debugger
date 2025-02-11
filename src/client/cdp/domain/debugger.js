@@ -6,16 +6,50 @@ export default class Debugger extends BaseDomain {
   namespace = 'Debugger';
 
   // collection of javascript scripts
-  scripts = new Map(); // { id: { url, content } }
+  static scripts = new Map(); // { id: { url, content } }
+
+  static getScriptByUrl(scriptUrl) {
+    for (let [id, { url, content }] of Debugger.scripts.entries()) {
+      if (url === scriptUrl) {
+        return { id, url, content }
+      }
+    }
+  }
+
+  /**
+   * Get unique id of javascript script
+   * @private
+   */
+  static getScriptId() {
+    Debugger.scriptId += 1;
+    return '' + Debugger.scriptId;
+  }
+
+  static addScript({ url, content, scriptId }) {
+    let id = scriptId || Debugger.getScriptId()
+    Debugger.scripts.set(id, {
+      url,
+      content: content
+    });
+  }
 
   // Unique id for javascript scripts
-  scriptId = 0;
+  static scriptId = 0;
 
   /**
    * @public
    */
   async enable() {
-    const scripts = await this.collectScripts();
+    const scriptId = Debugger.getScriptId()
+    const script = {
+      url: 'debugger://cdp/unknown',
+      scriptId,
+      content: ' '
+    }
+    Debugger.addScript(script)
+    this.sendScriptParsed(script)
+
+    const scripts = (await this.collectScripts()) || [];
     scripts.forEach(it => this.sendScriptParsed(it));
   }
 
@@ -35,7 +69,7 @@ export default class Debugger extends BaseDomain {
     if (navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         action: 'cdp_override_add',
-        url: this.scripts.get(scriptId).url,
+        url: Debugger.scripts.get(scriptId).url,
         content: scriptSource,
         contentType: ''
       })
@@ -67,7 +101,7 @@ export default class Debugger extends BaseDomain {
    */
   async getDynamicScript(script) {
     const url = script.src || script.getAttribute('src');
-    const scriptId = this.getScriptId();
+    const scriptId = Debugger.getScriptId();
     const content = await this.fetchScriptSource(scriptId, getAbsolutePath(url));
     this.sendScriptParsed({ scriptId, url, content, isModule: script.isModule });
   }
@@ -84,7 +118,7 @@ export default class Debugger extends BaseDomain {
       if (script.scriptId) {
         return;
       }
-      const scriptId = this.getScriptId();
+      const scriptId = Debugger.getScriptId();
       script.scriptId = scriptId;
       const src = script.getAttribute('src');
       if (src) {
@@ -109,10 +143,7 @@ export default class Debugger extends BaseDomain {
       xhr.$$requestType = 'Script';
       xhr.__initiator = null;
       const onCompleted = (content) => {
-        this.scripts.set(scriptId, {
-          url,
-          content: content
-        });
+        Debugger.addScript({ scriptId, url, content })
         resovle(content);
       }
       xhr.onload = () => onCompleted(xhr.responseText);
@@ -129,16 +160,7 @@ export default class Debugger extends BaseDomain {
    * @param {Number} param.scriptId javascript script unique id
    */
   getScriptSourceById(scriptId) {
-    const script = this.scripts.get(scriptId)
+    const script = Debugger.scripts.get(scriptId)
     return script ? script.content : '';
-  }
-
-  /**
-   * Get unique id of javascript script
-   * @private
-   */
-  getScriptId() {
-    this.scriptId += 1;
-    return `${this.scriptId}`;
   }
 };

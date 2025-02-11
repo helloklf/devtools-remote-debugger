@@ -96,6 +96,7 @@ export function objectFormat(val, others = {}) {
 
   if (isProxy(val)) {
     return {
+      objectId: getIdByObject(val, origin),
       type: 'string',
       value: `Proxy({...})`
     }

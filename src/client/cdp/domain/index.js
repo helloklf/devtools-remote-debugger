@@ -11,6 +11,7 @@ import Css from './css';
 import SourceDebugger from './debugger';
 import Input from './input';
 import protocol from './protocol';
+import { getFunctionLocation } from '../common/utils';
 
 export default class ChromeDomain {
   protocol = {};
@@ -112,6 +113,7 @@ export default class ChromeDomain {
       } else {
         options = { capture: Boolean(optionOrUseCapture) };
       }
+      const callFrame = getFunctionLocation(null, 'addEventListener')
 
       const targetListeners = eventListenersMap.get(this) || {};
       if (!targetListeners[type]) {
@@ -125,19 +127,7 @@ export default class ChromeDomain {
         useCapture: options.capture || false,
         type,
       };
-      const callFrames = Runtime.getCallFrames(new Error('addEventListener'));
-      for (let i = 0; i < callFrames.length; i++) {
-        const callFrame = callFrames[i];
-        if (callFrame.lineNumber && callFrame.columnNumber) {
-          Object.assign(data, {
-            // todo: get scriptId
-            // scriptId: '1',
-            lineNumber: callFrame.lineNumber,
-            columnNumber: callFrame.columnNumber
-          });
-          break;
-        }
-      }
+      Object.assign(data, callFrame || {});
       targetListeners[type].push(data);
       eventListenersMap.set(this, targetListeners);
 
@@ -181,10 +171,11 @@ export default class ChromeDomain {
    */
   proxyEventListeners() {
     this.proxyEventListener(EventTarget)
-    this.proxyEventListener(HTMLElement)
+    // this.proxyEventListener(HTMLElement)
 
     const eventListenersMap = DomDebugger.eventListenersMap;
     window.eventListenersMap = eventListenersMap;
+    /*
     window.getEventListeners = function(target) {
       let listenersMap = {};
       if (eventListenersMap.has(target)) {
@@ -209,5 +200,6 @@ export default class ChromeDomain {
       });
       return listenersMap;
     };
+    */
   }
 };
