@@ -1,6 +1,7 @@
 import BaseDomain from './domain';
 import { getObjectById, objectFormat } from '../common/remoteObject';
 import nodes from '../common/nodes';
+import Debugger from './debugger';
 
 export default class DomDebugger extends BaseDomain {
   namespace = 'DOMDebugger';
@@ -11,30 +12,6 @@ export default class DomDebugger extends BaseDomain {
    * @public
    */
   static eventListenersMap = new WeakMap();
-
-  getFunctionLocation (func) {
-    try {
-      // 强制抛出一个错误以捕获堆栈信息
-      throw new Error();
-    } catch (e) {
-      // 解析堆栈信息
-      const stackLines = e.stack.split('\n');
-      for (let line of stackLines) {
-        if (line.includes(func.name)) {
-          // 提取文件名、行号和列号
-          const match = line.match(/(http[s]?:\/\/.*):(\d+):(\d+)/);
-          if (match) {
-            return {
-              file: match[1],
-              line: match[2],
-              column: match[3]
-            };
-          }
-        }
-      }
-    }
-    return null;
-  }
 
   /**
    * @public
@@ -49,26 +26,47 @@ export default class DomDebugger extends BaseDomain {
         copy.handler = copy.originalHandler = objectFormat(v.listener);
         // capture -> useCapture
         delete copy.capture;
-        // TODO: Get a real scriptId. Make sure devtools can locate the source code correctly, otherwise the handler will not be displayed
-        copy.scriptId = '1'
+        // fileName -> scriptId
+        if (!copy.scriptId && copy.fileName) {
+          // Get a real scriptId. Make sure devtools can locate the source code correctly, otherwise the handler will not be displayed
+          const script = Debugger.getScriptByUrl(copy.fileName)
+          if (script) {
+            copy.scriptId = script.id
+          }
+        }
         copy.backendNodeId = nodes.getIdByNode(node);
         return copy;
       })
     };
-    const events = Object.getOwnPropertyNames(
-      HTMLElement.prototype
-    ).filter(it => typeof it === 'string' && it.indexOf('on') === 0);
     const listeners = result.listeners
-    events.forEach(event => {
-      if (node[event]) {
-        const type = event.substring(2);
-        listeners.push({
-          ...target[event],
-          type
-        });
+    for (let prop of Object.getOwnPropertyNames(HTMLElement.prototype)) {
+      if (prop.indexOf('on') === 0) {
+        const type = prop.substring(0)
+        if (node[type] && node[type] instanceof Function) {
+            const handler = objectFormat(node[type]);
+            listeners.push({
+              backendNodeId: nodes.getIdByNode(node),
+              // columnNumber: 0,
+              // lineNumber: 0,
+              // scriptId: '1',
+              type, // type.substring(2), // onclick -> click
+              handler,
+              originalHandler: handler,
+              // useCapture: false,
+            })
+        }
       }
-    });
-    console.log('getEventListeners', node, objectId, listeners)
+    }
+    // TODO: Anonymous code that cannot trace the source code also needs to find a way to construct a scriptId
+    listeners.forEach(it => {
+      if (!it.scriptId) {
+        it.scriptId = '1'
+        it.columnNumber = 1
+        it.lineNumber = 1
+      }
+    })
+
+    // console.log('getEventListeners', node, objectId, result)
     return result
   }
 }

@@ -1,3 +1,5 @@
+import ErrorStackParser from "error-stack-parser";
+
 /**
  * get absolute path
  * @param {String} url
@@ -66,4 +68,34 @@ export function getResponseLength (xhr) {
   }
 
   return len;
+}
+
+export function getFunctionLocation (func, before) {
+  // 解析堆栈信息
+  let stackLines = ErrorStackParser.parse(new Error())
+  /*
+  [
+    {
+        columnNumber: 93310,
+        fileName: ".../dist/cdp.js",
+        functionName: "e.addEventListener",
+        lineNumber: 2,
+        source: "    at e.addEventListener (.../cdp.js:2:93310)"
+    },
+    ...
+  ]
+  */
+
+  if (before) {
+    stackLines = stackLines.slice(stackLines.findIndex(it => it.functionName && it.functionName.indexOf(`.${before}`) > -1) + 1)
+  }
+  if (func) {
+  const fun = func.name;
+    if (fun) {
+      return stackLines.find(it => it.functionName && /{fun}$/.test(it.functionName))
+    } else {
+      return stackLines.find(it => !it.functionName)
+    }
+  }
+  return stackLines[0]
 }
