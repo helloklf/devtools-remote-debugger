@@ -58,12 +58,13 @@ export default class Dom extends BaseDomain {
   }
 
   /**
-   * Get root's documentation
-   * @public
+   * @public Get root's documentation
+   * @param {Number} params.depth The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
+   * @param {Boolean} params.pierce Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
    */
-  getDocument() {
+  getDocument(params) {
     return {
-      root: nodes.collectNodes(document),
+      root: nodes.collectNodes(document, params && params.depth || 999),
     };
   }
 

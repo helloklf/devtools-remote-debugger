@@ -196,8 +196,9 @@ export default class Runtime extends BaseDomain {
       };
     } catch (error) {
       return {
+        result: 'Error',
         exceptionDetails: {
-          text: error.message,
+          text: '', // error.toLocaleString(),
           exception: objectFormat(error),
         }
       };

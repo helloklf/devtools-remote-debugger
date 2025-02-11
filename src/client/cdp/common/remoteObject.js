@@ -24,22 +24,35 @@ const getRealType = (val) => {
 const getSubType = (val) => {
   // DOM node type
   try {
-    if (val && [1, 8, 9].includes(val.nodeType)) return 'node';
+    if (val && [1, 8, 9].includes(val.nodeType)) return ['node'];
   } catch { };
 
   const realType = getRealType(val).toLowerCase();
-  return [
-    'array', 'null', 'regexp', 'date', 'map', 'set', 'weakmap', 'weakset',
-    'error', 'proxy', 'promise', 'arraybuffer', 'iterator', 'generator',
-  ].includes(realType)
-    ? realType
-    : '';
+  if (['array', 'null', 'regexp', 'date', 'map', 'set', 'weakmap', 'weakset', 'error', 'proxy', 'promise', 'arraybuffer', 'iterator', 'generator',].includes(realType)) {
+    return [realType, realType]
+  }
+  return ['', realType]
 };
 
-const getType = val => ({
-  type: typeof val,
-  subtype: getSubType(val),
-});
+const getType = val => {
+  const [subtype, realType] = getSubType(val)
+  return {
+    type: typeof val,
+    subtype,
+    realType,
+  }
+};
+
+// HTMLDivElement -> div#app.some-class
+// You only need to provide a string and devtools will automatically parse and highlight it
+const getNodeDescription = (node) => {
+  // You only need to provide a string and devtools will automatically parse and highlight it
+  return node.localName + (
+    node.id ? ('#' + node.id) : ''
+  ) + (
+    node.className ? ('.' + node.className.replace(/\s/g, '.')) : ''
+  );
+}
 
 const getPreview = (val, others = {}) => {
   const { length = 5, origin = val } = others;
@@ -47,6 +60,7 @@ const getPreview = (val, others = {}) => {
   // if (subtype === 'map' || subtype === 'set') {
 
   // }
+  const { realType } = getType(val)
 
   const keys = Object.keys(val);
   const properties = [];
@@ -65,7 +79,7 @@ const getPreview = (val, others = {}) => {
       } else if (['date', 'regexp'].includes(subtype)) {
         subVal = subVal.toString();
       } else if (subtype === 'node') {
-        subVal = `#${subVal.nodeName}`;
+        subVal = getNodeDescription(subVal);
       } else {
         subVal = subVal && subVal.constructor.name;
       }
@@ -80,10 +94,16 @@ const getPreview = (val, others = {}) => {
     });
   });
 
-  return {
+  const result = {
     overflow: keys.length > length,
     properties,
   };
+
+  if (realType === 'htmlcollection') {
+    result.subtype = 'array'
+  }
+
+  return result;
 };
 
 // Proxy: Vue Proxy object serialization has the risk of infinite loop, But there's no better way to tell if it's a Proxy
@@ -101,7 +121,7 @@ export function objectFormat(val, others = {}) {
       value: `Proxy({...})`
     }
   }
-  const { type, subtype } = getType(val);
+  const { type, subtype, realType } = getType(val);
 
   if (type === 'undefined') return { type };
 
@@ -157,20 +177,27 @@ export function objectFormat(val, others = {}) {
     });
     // HTML Element
   } else if (subtype === 'node') {
-    res.className = res.description = val.constructor.name;
+    res.className = '' + val.constructor.name;
+    res.description = getNodeDescription(val);
     // Others
   } else {
     try {
-      res.className = res.description = val.constructor.name;
+      res.className = val.constructor.name;
     } catch {
-      res.className = res.description = '';
+      res.className = '';
     }
-    preview && (res.preview = {
-      type,
-      subtype,
-      description: res.description,
-      ...getPreview(val, { origin }),
-    });
+    res.description = res.className;
+    if (preview) {
+      res.preview = {
+        type,
+        subtype,
+        description: res.description,
+        ...getPreview(val, { origin }),
+      }
+      if (realType === 'htmlcollection') {
+        res.preview.description = `HTMLCollection(${val.length})`
+      }
+    }
   }
 
   return res;
