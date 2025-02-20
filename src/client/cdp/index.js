@@ -103,7 +103,7 @@ function keepScreenDisplay() {
   });
 }
 
-window.cdp = function (serverHost) {
+window.cdp = function (serverHost, invisible) {
   if (serverHost) {
     const { origin, pathname } = new URL(serverHost)
     DEBUG_HOST = origin
@@ -123,17 +123,17 @@ margin: 0.2em;">
   <div>Debugger</div>
   <div style="font-size: 0.7em;">ID: ${getId()}</div>
 </div>`;
-  try {
-    const addEle = () => {
-      document.body.appendChild(node);
-    };
-    if (document.body) {
-      addEle();
-    } else {
-      window.addEventListener('load', addEle);
+  if (!invisible) {
+    try {
+      const addEle = () => document.body.appendChild(node);
+      if (document.body) {
+        addEle();
+      } else {
+        window.addEventListener('load', addEle);
+      }
+    } catch(e) {
+      console.info('[Error] cdp', e.message);
     }
-  } catch(e) {
-    console.info('[Error] cdp', e.message);
   }
   initSocket();
   keepScreenDisplay();

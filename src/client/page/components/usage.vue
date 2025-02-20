@@ -3,6 +3,8 @@
     {{ $t('useTitle') }}
     <div class="code">
       &lt;script src=&quot;{{ DEBUG_HOST }}{{ DEBUG_PREFIX }}/dist/cdp.js&quot;&gt;&lt;/script&gt;
+      <br />
+      &lt;script &gt;window.cdp && window.cdp();&lt;/script&gt;
     </div>
     <div class="notice">
       <div class="title">{{ $t('notice') }}</div>
