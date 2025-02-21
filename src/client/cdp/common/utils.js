@@ -99,3 +99,14 @@ export function getFunctionLocation (func, before) {
   }
   return stackLines[0]
 }
+
+export function throttle(func, wait) {
+  let lastTime = 0;
+  return function(...args) {
+      const now = Date.now();
+      if (now - lastTime >= wait) {
+          lastTime = now;
+          func.apply(this, args);
+      }
+  };
+}

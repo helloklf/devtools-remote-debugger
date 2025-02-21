@@ -28,6 +28,10 @@ func1.onclick = function () {
 };
 
 func2.onclick = function () {
+  console.log('cdp - ', {
+    a: 1231,
+    b: 57534
+  })
   const panel2 = document.querySelector('#panel2');
   const mask = panel2.querySelector('.popup__mask');
   const action = panel2.querySelector('.action-sheet__action');

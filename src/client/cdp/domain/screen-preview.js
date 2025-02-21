@@ -1,5 +1,4 @@
-import throttle from 'lodash.throttle';
-import { isMatches, loadScript } from '../common/utils';
+import { isMatches, loadScript, throttle } from '../common/utils';
 import { DEVTOOL_OVERLAY, HTML_TO_CANVAS_CANVAS } from '../common/constant';
 import domToImage from '../common/domToImage';
 

@@ -113,11 +113,11 @@ window.cdp = function (serverHost, invisible) {
   const node = document.createElement('div');
   node.innerHTML = `<div style="background: #39a734;
 color: #fff;
+font-size: 12px;
 padding: 0.4em 0.5em;
 position: fixed;
 left: 0;
 top: 0;
-transform: scale(0.8);
 border-radius: 0.4em;
 margin: 0.2em;">
   <div>Debugger</div>

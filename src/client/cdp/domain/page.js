@@ -1,7 +1,7 @@
 import ScreenPreview from './screen-preview';
 import BaseDomain from './domain';
 import { Event } from './protocol';
-import throttle from 'lodash.throttle';
+import { throttle } from '../common/utils';
 
 function cropImage(base64, { left, top }) {
   return new Promise((resolve) => {
