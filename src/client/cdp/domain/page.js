@@ -1,7 +1,12 @@
-import ScreenPreview from './screen-preview';
 import BaseDomain from './domain';
 import { Event } from './protocol';
-import { throttle } from '../common/utils';
+import { isMatches, loadScript } from '../common/utils';
+import { DEVTOOL_OVERLAY, HTML_TO_CANVAS_CANVAS } from '../common/constant';
+import domToImage from '../common/domToImage';
+import throttle from 'lodash.throttle';
+
+let useDomToImage = true;
+const HTML_TO_IMAGE = 'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js';
 
 function cropImage(base64, { left, top }) {
   return new Promise((resolve) => {
@@ -131,10 +136,53 @@ export default class Page extends BaseDomain {
     window.location.href = url
   }
 
+  elementExclude(element) {
+    if (!element || element.tagName === 'SCRIPT') return true;
+    if (!element?.style) return false;
+    const { display, opacity, visibility } = element.style;
+    return isMatches(element, `.${DEVTOOL_OVERLAY}`) ||
+      display === 'none' ||
+      opacity === 0 ||
+      visibility === 'hidden';
+  }
+
+  captureScreen () {
+    // Faster and less dom contamination
+    if (useDomToImage) {
+      return domToImage.toJpeg(document.body, {
+        quality: 0.6,
+        filter: (ele) => !this.elementExclude(ele)
+      }).catch(e => {
+        console.info('Failed to capture screen with dom-to-image:', e);
+        useDomToImage = false;
+      });
+    } else {
+      const canvas = document.createElement('canvas');
+      canvas.className = HTML_TO_CANVAS_CANVAS;
+      const renderScreen = () => window.html2canvas(document.body, {
+        allowTaint: true,
+        backgroundColor: null,
+        useCORS: true,
+        imageTimeout: 10000,
+        scale: 1,
+        logging: false,
+        foreignObjectRendering: false,
+        ignoreElements: this.elementExclude
+      }).then(canvas => canvas.toDataURL('image/jpeg'));
+  
+      if (window.html2canvas) {
+        return renderScreen();
+      }
+  
+      return loadScript(HTML_TO_IMAGE).then(renderScreen);
+    }
+  }
+
   startScreencast() {
+    const self = this;
     const captureScreen = throttle(() => {
       if (document.hidden) return;
-      ScreenPreview.captureScreen().then((base64) => {
+      self.captureScreen().then((base64) => {
         const left = document.body.scrollLeft || window.document.documentElement.scrollLeft;
         const top = document.body.scrollTop || window.document.documentElement.scrollTop;
         if (this.prevImage === base64 && `${left}|${top}` === this.prevOffset) return;
@@ -159,7 +207,7 @@ export default class Page extends BaseDomain {
           });
         })
       });
-    }, 350);
+    }, 350, { leading: true, trailing: true });
 
     captureScreen();
 
