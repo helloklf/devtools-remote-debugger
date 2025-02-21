@@ -1,0 +1,48 @@
+{
+  "_from": "chrome-devtools-built",
+  "_id": "chrome-devtools-built@1.20251602.0",
+  "_inBundle": false,
+  "_integrity": "sha512-VJNHIPWXUhIJb4CUPpq8XX2vT5h9tRlW7SEmDut6kgS+LfHFEbsH8JbF81UeDdH0it30W6khlMkKfY2K8vRJxA==",
+  "_location": "/chrome-devtools-built",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "chrome-devtools-built",
+    "name": "chrome-devtools-built",
+    "escapedName": "chrome-devtools-built",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmmirror.com/chrome-devtools-built/-/chrome-devtools-built-1.20251602.0.tgz",
+  "_shasum": "530641efd8fe51fd4517cb26dc538a984b2d459f",
+  "_spec": "chrome-devtools-built",
+  "_where": "E:\\新建文件夹",
+  "author": {
+    "name": "Ilya Medvedev",
+    "email": "ilya@medvedev.im"
+  },
+  "bugs": {
+    "url": "https://github.com/iam-medvedev/chrome-devtools/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "chrome-devtools-frontend built version",
+  "files": [
+    "public",
+    "README.md"
+  ],
+  "homepage": "https://github.com/iam-medvedev/chrome-devtools#readme",
+  "license": "MIT",
+  "name": "chrome-devtools-built",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iam-medvedev/chrome-devtools.git"
+  },
+  "version": "1.20251602.0"
+}

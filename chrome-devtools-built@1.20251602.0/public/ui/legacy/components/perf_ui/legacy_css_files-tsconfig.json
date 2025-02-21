@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "."
+    },
+    "files": [
+        "overviewGrid.css.legacy.js",
+        "timelineGrid.css.legacy.js"
+    ]
+}

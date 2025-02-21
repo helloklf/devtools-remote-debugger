@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "."
+    },
+    "files": [
+        "baseInsightComponent.css.js",
+        "checklist.css.js",
+        "table.css.js"
+    ]
+}

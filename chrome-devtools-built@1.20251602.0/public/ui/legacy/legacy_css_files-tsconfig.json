@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "."
+    },
+    "files": [
+        "inspectorCommon.css.legacy.js",
+        "softDropDownButton.css.legacy.js",
+        "textPrompt.css.legacy.js"
+    ]
+}

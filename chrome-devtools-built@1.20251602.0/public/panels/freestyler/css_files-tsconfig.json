@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "."
+    },
+    "files": [
+        "./components/freestylerChatUi.css.js",
+        "./components/userActionRow.css.js",
+        "./freestylerPanel.css.js"
+    ]
+}
