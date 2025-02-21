@@ -75,6 +75,13 @@ function getRouter(clients) {
 
   router.get('/front_end/(.*)', async (ctx) => {
     await send(ctx, getFilePath(ctx.path).substring(10), {
+      root: path.resolve(__dirname, '../../devtools-frontend-classical'),
+      maxage: 30 * 24 * 60 * 60 * 1000,
+    });
+  });
+
+  router.get('/front_end2/(.*)', async (ctx) => {
+    await send(ctx, getFilePath(ctx.path).substring(10), {
       root: path.resolve(__dirname, '../../chrome-devtools-built@1.20251602.0/public'),
       maxage: 30 * 24 * 60 * 60 * 1000,
     });
