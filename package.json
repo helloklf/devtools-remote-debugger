@@ -7,6 +7,7 @@
     "client": "webpack serve --config ./src/client/webpack.config.dev.js",
     "build": "webpack --progress --config ./src/client/webpack.config.js",
     "build-cdp": "webpack --progress --config ./src/client/webpack.config.cdp.js",
+    "compress": "node devtools-compress.js",
     "serve": "cross-env NODE_ENV=development npx nodemon ./src/server/index.js",
     "start": "cross-env NODE_ENV=production node ./src/server/index.js",
     "lint": "eslint src/**/*.js --fix"
@@ -41,6 +42,7 @@
     "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "eslint-plugin-promise": "^6.0.0",
     "html-webpack-plugin": "^5.5.0",
+    "lzma-native": "^8.0.6",
     "mini-css-extract-plugin": "^2.7.5",
     "nodemon": "^2.0.22",
     "unplugin-auto-import": "^0.15.2",
@@ -67,6 +69,7 @@
     "koa-compress": "^5.1.1",
     "koa-send": "^5.0.1",
     "lodash.throttle": "^4.1.1",
+    "lzma": "^2.3.2",
     "mime": "^4.0.1",
     "reconnecting-websocket": "^4.4.0",
     "specificity": "^0.4.1",
