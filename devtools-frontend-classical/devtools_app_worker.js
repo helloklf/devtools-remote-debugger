@@ -17,7 +17,6 @@ const storageName = 'devtools_app';
 
 
 var LZMA = (function () {
-    
   "use strict";
   
   var 
@@ -935,7 +934,7 @@ self.addEventListener('install', event => {
 
         let contentType;
         if (filePath.endsWith('.js')) {
-            contentType = 'application/javasript'
+            contentType = 'application/javascript'
         } else if (filePath.endsWith('.json')) {
             contentType = 'application/json'
         } else if (filePath.endsWith('.css')) {
