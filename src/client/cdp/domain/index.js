@@ -66,6 +66,8 @@ export default class ChromeDomain {
   proxyAppendChild() {
     const originHeadAppendChild = HTMLHeadElement.prototype.appendChild;
     const originBodyAppendChild = HTMLBodyElement.prototype.appendChild;
+    const originHeadAppend = HTMLHeadElement.prototype.appendChild;
+    const originBodyAppend = HTMLBodyElement.prototype.appendChild;
 
     const fetchSource = (node) => {
       const tag = node?.tagName?.toLowerCase();
@@ -86,16 +88,17 @@ export default class ChromeDomain {
       }
     };
 
-    HTMLHeadElement.prototype.appendChild = function (node) {
-      const result = originHeadAppendChild.call(this, node);
-      fetchSource(node);
-      return result;
+    const hook = (origin) => {
+      return function (node) {
+        const result = origin.call(this, node);
+        fetchSource(node);
+        return result;
+      }
     };
-    HTMLBodyElement.prototype.appendChild = function (node) {
-      const result = originBodyAppendChild.call(this, node);
-      fetchSource(node);
-      return result;
-    };
+    HTMLHeadElement.prototype.appendChild = hook(HTMLHeadElement.prototype.appendChild);
+    HTMLBodyElement.prototype.appendChild = hook(HTMLBodyElement.prototype.appendChild);
+    HTMLHeadElement.prototype.append = hook(HTMLHeadElement.prototype.append);
+    HTMLBodyElement.prototype.append = hook(HTMLBodyElement.prototype.append);
   }
 
   proxyEventListener (eventTarget) {
